@@ -133,7 +133,8 @@ static bfd_boolean aout_get_external_symbols
   PARAMS ((bfd *));
 static bfd_boolean translate_from_native_sym_flags
   PARAMS ((bfd *, aout_symbol_type *));
-static bfd_boolean translate_to_native_sym_flags
+/*Amiga hack - used in amigaos.c, must be global */
+/*static*/ bfd_boolean translate_to_native_sym_flags
   PARAMS ((bfd *, asymbol *, struct external_nlist *));
 static void adjust_o_magic
   PARAMS ((bfd *, struct internal_exec *));
@@ -1657,7 +1658,7 @@ translate_from_native_sym_flags (abfd, cache_ptr)
 
 /* Set the fields of SYM_POINTER according to CACHE_PTR.  */
 
-static bfd_boolean
+/*static*/ bfd_boolean
 translate_to_native_sym_flags (abfd, cache_ptr, sym_pointer)
      bfd *abfd;
      asymbol *cache_ptr;
@@ -2065,12 +2066,31 @@ NAME(aout,swap_std_reloc_out) (abfd, g, natptr)
 
   PUT_WORD (abfd, g->address, natptr->r_address);
 
-  r_length = g->howto->size ;	/* Size as a power of two.  */
+  r_length = g->howto->size ;	/* Size as a power of two */
   r_pcrel  = (int) g->howto->pc_relative; /* Relative to PC?  */
+#if 1
+  /* FIXME! "#if 1" is the wrong way to select this Amiga specific code.
+   We can't just test for __amigaos__ defined either, since we may be
+   building a cross compiler and __amigaos__ is only defined if the
+   compiler we are using is targeted for the Amiga. */
+  /* Changed for cooperation with AMIGA backend */
+  /* This only applies, if aout flavour    191194 ST*/
   /* XXX This relies on relocs coming from a.out files.  */
+  if (bfd_asymbol_bfd(sym)->xvec->flavour==bfd_target_aout_flavour)
+    {
   r_baserel = (g->howto->type & 8) != 0;
   r_jmptable = (g->howto->type & 16) != 0;
   r_relative = (g->howto->type & 32) != 0;
+    }
+  else
+    {
+      r_baserel=r_jmptable=r_relative=0;
+    }
+#else
+  r_baserel = (g->howto->type & 8) != 0;
+  r_jmptable = (g->howto->type & 16) != 0;
+  r_relative = (g->howto->type & 32) != 0;
+#endif
 
 #if 0
   /* For a standard reloc, the addend is in the object file.  */
@@ -2369,8 +2389,12 @@ NAME(aout,swap_std_reloc_in) (abfd, bytes, cache_ptr, symbols, symcount)
   /* Base relative relocs are always against the symbol table,
      regardless of the setting of r_extern.  r_extern just reflects
      whether the symbol the reloc is against is local or global.  */
+#if 0
+  /* FIXME! "#if 0" is the wrong way to disable this code.  See comment
+     earlier in file. */
   if (r_baserel)
     r_extern = 1;
+#endif
 
   if (r_extern && r_index > symcount)
     {

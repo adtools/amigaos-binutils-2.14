@@ -111,6 +111,9 @@ ALL_EMULATIONS = \
 	ea29k.o \
 	eaixppc.o \
 	eaixrs6.o \
+	eamiga.o \
+	eamiga_bss.o \
+	eamithlon.o \
 	ealpha.o \
 	earcelf.o \
 	earm_epoc_pe.o \
@@ -252,6 +255,8 @@ ALL_EMULATIONS = \
 	emipslit.o \
 	emipslnews.o \
 	emipspe.o \
+	emorphos.o \
+	emorphos_baserel.o \
 	emsp430x1101.o \
 	emsp430x1111.o \
 	emsp430x1121.o \
@@ -300,6 +305,8 @@ ALL_EMULATIONS = \
 	epdp11.o \
 	epjelf.o \
 	epjlelf.o \
+	eppcamiga.o \
+	eppcamiga_bss.o \
 	eppcmacos.o \
 	eppcnw.o \
 	eppcpe.o \
@@ -432,6 +439,21 @@ GENSCRIPTS = LIB_PATH='${LIB_PATH}' $(SHELL) $(srcdir)/genscripts.sh ${srcdir} $
 GEN_DEPENDS = $(srcdir)/genscripts.sh stringify.sed
 @TDIRS@
 
+eamiga.c: $(srcdir)/emulparams/amiga.sh\
+   $(srcdir)/emultempl/amiga.em $(srcdir)/scripttempl/amiga.sc ${GEN_DEPENDS} 
+	${GENSCRIPTS} amiga "$(tdir_amiga)"
+eamiga_bss.c: $(srcdir)/emulparams/amiga_bss.sh\
+   $(srcdir)/emultempl/amiga.em $(srcdir)/scripttempl/amiga_bss.sc ${GEN_DEPENDS}
+	${GENSCRIPTS} amiga_bss "$(tdir_amiga_bss)"
+eamithlon.c: $(srcdir)/emulparams/amithlon.sh \
+  $(srcdir)/emultempl/amithlon.em $(srcdir)/scripttempl/amithlon.sc ${GEN_DEPENDS}
+	${GENSCRIPTS} amithlon "$(tdir_amithlon)"
+eppcamiga.c: $(srcdir)/emulparams/ppcamiga.sh\
+   $(srcdir)/emultempl/amiga.em $(srcdir)/scripttempl/amiga.sc ${GEN_DEPENDS} 
+	${GENSCRIPTS} ppcamiga "$(tdir_ppcamiga)"
+eppcamiga_bss.c: $(srcdir)/emulparams/ppcamiga_bss.sh\
+   $(srcdir)/emultempl/amiga.em $(srcdir)/scripttempl/amiga_bss.sc ${GEN_DEPENDS}
+	${GENSCRIPTS} ppcamiga_bss "$(tdir_ppcamiga_bss)"
 ea29k.c: $(srcdir)/emulparams/a29k.sh \
   $(srcdir)/emultempl/generic.em $(srcdir)/scripttempl/a29k.sc ${GEN_DEPENDS}
 	${GENSCRIPTS} a29k "$(tdir_a29k)"
@@ -1011,6 +1033,12 @@ emipslnews.c:  $(srcdir)/emulparams/mipslnews.sh \
 emipspe.c: $(srcdir)/emulparams/mipspe.sh \
   $(srcdir)/emultempl/pe.em $(srcdir)/scripttempl/pe.sc ${GEN_DEPENDS}
 	${GENSCRIPTS} mipspe "$(tdir_mips)"
+emorphos.c: $(srcdir)/emulparams/morphos.sh \
+  $(srcdir)/emultempl/morphos.em $(srcdir)/scripttempl/morphos.sc ${GEN_DEPENDS}
+	${GENSCRIPTS} morphos "$(tdir_morphos)"
+emorphos_baserel.c: $(srcdir)/emulparams/morphos_baserel.sh \
+  $(srcdir)/emultempl/morphos.em $(srcdir)/scripttempl/morphos_baserel.sc ${GEN_DEPENDS}
+	${GENSCRIPTS} morphos_baserel "$(tdir_morphos)"
 emn10300.c: $(srcdir)/emulparams/mn10300.sh \
   $(srcdir)/emulparams/mn10200.sh \
   $(srcdir)/emultempl/elf32.em $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
@@ -1537,7 +1565,7 @@ install-data-local:
 
 # We want install to imply install-info as per GNU standards, despite the
 # cygnus option.
-install: install-info
+#install: install-info
 
 # Stuff that should be included in a distribution.  The diststuff
 # target is run by the taz target in ../Makefile.in.

@@ -325,7 +325,32 @@ bfd_seek (abfd, position, direction)
   if (direction == SEEK_SET && abfd->my_archive != NULL)
     file_position += abfd->origin;
 
+#ifndef __amigaos__
   result = fseek (f, file_position, direction);
+#else
+  {
+    struct stat stat_buf;
+    if (direction == SEEK_CUR)
+      file_position += ftell (f);
+    fflush (f);
+    if (!(result = fstat (fileno (f), &stat_buf)) &&
+	file_position > stat_buf.st_size &&
+	!(result = fseek (f, stat_buf.st_size, SEEK_SET))) {
+      int zeroes = file_position - stat_buf.st_size;
+      char *buf = calloc (4096, 1);
+      if (buf) {
+	while (zeroes > 0) {
+	  int r, x = (zeroes > 4096? 4096 : zeroes);
+	  if ((r = write (fileno (f), buf, x))<=0)
+	    break;
+	  zeroes -= r;
+	}
+	free (buf);
+      }
+    }
+    result = fseek (f, file_position, SEEK_SET);
+  }
+#endif
   if (result != 0)
     {
       int hold_errno = errno;

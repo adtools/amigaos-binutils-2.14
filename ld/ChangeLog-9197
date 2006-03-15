@@ -147,6 +147,11 @@ Fri Oct 17 00:00:13 1997  Richard Henderson  <rth@cygnus.com>
 	since we need to be able to export different versions of the same
 	symbol.
 
+Thu Oct 16 13:21:14 1997  Fred Fish  <fnf@ninemoons.com>
+
+	* ldlang.c (new_afile): Only reference amiga_attribute when
+	the target is AmigaOS.
+
 Wed Oct 15 14:52:36 1997  Ian Lance Taylor  <ian@cygnus.com>
 
 	* scripttempl/pe.sc: Put .stab and .stabstr sections at end.
@@ -1283,6 +1288,12 @@ Mon Aug  5 16:26:14 1996  Ian Lance Taylor  <ian@cygnus.com>
 	* ldcref.c (check_nocrossref): Skip symbols with no output
 	sections.
 
+Sun Aug  4 22:15:56 1996  Fred Fish  <fnf@ninemoons.com>
+
+	* ldfile.c (ldfile_open_file_search): Use alloca to allocate
+	dynamically sized array, rather than using a GNU C extension that
+	is not portable.	
+
 Fri Aug  2 14:57:49 1996  Ian Lance Taylor  <ian@cygnus.com>
 
 	* ldgram.y (LOADADDR): New terminal.
@@ -1508,6 +1519,10 @@ Mon Jun 24 12:00:32 1996  Ian Lance Taylor  <ian@cygnus.com>
 	* configure.in: On alpha*-*-osf*, link against libbfd.a if not
 	using shared libraries.
 	* configure: Rebuild with autoconf 2.10.
+
+Sat Jun 22 21:41:37 1996 Daniel Verite <daniel@brainstorm.eu.org>
+
+	* ldfile.c, lexsup.c: Sort the flavors.
 
 Fri Jun 21 17:40:56 1996  Joel Sherrill  <joel@merlin.gcs.redstone.army.mil>
 

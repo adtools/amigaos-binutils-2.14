@@ -2484,6 +2484,10 @@ to compensate for the borrow when the low bits are added.  */
   BFD_RELOC_PPC_EMB_RELST_HA,
   BFD_RELOC_PPC_EMB_BIT_FLD,
   BFD_RELOC_PPC_EMB_RELSDA,
+  BFD_RELOC_PPC_MORPHOS_DREL,
+  BFD_RELOC_PPC_MORPHOS_DREL_LO,
+  BFD_RELOC_PPC_MORPHOS_DREL_HI,
+  BFD_RELOC_PPC_MORPHOS_DREL_HA,
   BFD_RELOC_PPC64_HIGHER,
   BFD_RELOC_PPC64_HIGHER_S,
   BFD_RELOC_PPC64_HIGHEST,
@@ -3806,6 +3810,7 @@ struct bfd
       struct cisco_core_struct *cisco_core_data;
       struct versados_data_struct *versados_data;
       struct netbsd_core_struct *netbsd_core_data;
+      struct amiga_data_struct *amiga_data;
       struct mach_o_data_struct *mach_o_data;
       struct mach_o_fat_data_struct *mach_o_fat_data;
       struct bfd_pef_data_struct *pef_data;
@@ -4069,6 +4074,7 @@ core_file_matches_executable_p PARAMS ((bfd *core_bfd, bfd *exec_bfd));
 enum bfd_flavour
 {
   bfd_target_unknown_flavour,
+  bfd_target_amiga_flavour,
   bfd_target_aout_flavour,
   bfd_target_coff_flavour,
   bfd_target_ecoff_flavour,

@@ -857,7 +857,12 @@ filter_symbols (abfd, obfd, osyms, isyms, symcount)
 	}
 
       if (strip_symbols == STRIP_ALL)
+      {
+      	if (strcmp(name, "_start") == 0 || strcmp(name, "__amigaos4__") == 0)
+	  keep = 1;
+	else
 	keep = 0;
+      }
       else if ((flags & BSF_KEEP) != 0		/* Used in relocation.  */
 	       || ((flags & BSF_SECTION_SYM) != 0
 		   && ((*bfd_get_section (sym)->symbol_ptr_ptr)->flags
@@ -1239,7 +1244,7 @@ copy_object (ibfd, obfd)
 	 haven't been set yet.  mark_symbols_used_in_relocations will
 	 ignore input sections which have no corresponding output
 	 section.  */
-      if (strip_symbols != STRIP_ALL)
+//      if (strip_symbols != STRIP_ALL)
 	bfd_map_over_sections (ibfd,
 			       mark_symbols_used_in_relocations,
 			       (PTR)isympp);
@@ -1843,7 +1848,9 @@ copy_section (ibfd, isection, obfdarg)
       if (relcount < 0)
 	RETURN_NONFATAL (bfd_get_filename (ibfd));
 
-      if (strip_symbols == STRIP_ALL)
+      /* Never, ever, strip reloc data on the Amiga! */
+      if (strip_symbols == STRIP_ALL &&
+	  bfd_get_flavour(obfd) != bfd_target_amiga_flavour)
 	{
 	  /* Remove relocations which are not in
 	     keep_strip_specific_list.  */
@@ -1853,10 +1860,31 @@ copy_section (ibfd, isection, obfdarg)
 
 	  temp_relpp = (arelent **) xmalloc (relsize);
 	  for (i = 0; i < relcount; i++)
+	  {
+	    asection *sec;
+	    sec = bfd_get_section(*relpp[i]->sym_ptr_ptr);
+
+//	    printf("%d: %s (0x%lx + 0x%lx) value 0x%lx (in section %s)\n",
+//	    	i, bfd_asymbol_name (*relpp [i]->sym_ptr_ptr), relpp [i]->address, relpp [i]->addend,
+//		bfd_asymbol_value(*relpp [i]->sym_ptr_ptr),
+//		bfd_section_name(ibfd, sec));
+
+	    /* Keep the symbol */
 	    if (is_specified_symbol
 		(bfd_asymbol_name (*relpp [i]->sym_ptr_ptr),
 		 keep_specific_list))
 	      temp_relpp [temp_relcount++] = relpp [i];
+	    else
+	    {
+	    	/* Don't keep the symbol, but keep the reloc */
+		temp_relpp [temp_relcount] = relpp[i];
+		temp_relpp [temp_relcount]->addend = bfd_asymbol_value(*relpp [i]->sym_ptr_ptr)
+							 - sec->vma
+							 + relpp[i]->addend;
+		temp_relpp [temp_relcount]->sym_ptr_ptr = sec->symbol_ptr_ptr;
+		temp_relcount++;
+	    }
+	  }
 	  relcount = temp_relcount;
 	  free (relpp);
 	  relpp = temp_relpp;
@@ -2005,6 +2033,9 @@ mark_symbols_used_in_relocations (ibfd, isection, symbolsarg)
 	  && *relpp[i]->sym_ptr_ptr != bfd_abs_section_ptr->symbol
 	  && *relpp[i]->sym_ptr_ptr != bfd_und_section_ptr->symbol)
 	(*relpp[i]->sym_ptr_ptr)->flags |= BSF_KEEP;
+
+/*      if ((*relpp[i]->sym_ptr_ptr)->flags & BSF_SECTION_SYM)
+        (*relpp[i]->sym_ptr_ptr)->flags |= BSF_KEEP;*/
     }
 
   if (relpp != NULL)
@@ -2172,7 +2203,10 @@ strip_main (argc, argv)
   if (show_version)
     print_version ("strip");
 
-  /* Default is to strip all symbols.  */
+  add_specific_symbol("__amigaos4__", &keep_specific_list);
+  add_specific_symbol("_start", &keep_specific_list);
+
+  /* Default is to strip all unnecessary symbols.  */
   if (strip_symbols == STRIP_UNDEF
       && discard_locals == LOCALS_UNDEF
       && strip_specific_list == NULL)
@@ -2691,6 +2725,8 @@ copy_main (argc, argv)
  
   if (show_version)
     print_version ("objcopy");
+
+  add_specific_symbol("__amigappc__", &keep_specific_list);
 
   if (copy_byte >= interleave)
     fatal (_("byte number must be less than interleave"));

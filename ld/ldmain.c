@@ -470,11 +470,15 @@ main (argc, argv)
 
   /* Print error messages for any missing symbols, for any warning
      symbols, and possibly multiple definitions.  */
+#ifdef __amigaos4__
+  /* Make relocatable files executable as well */
+    output_bfd->flags |= EXEC_P;
+#else
   if (link_info.relocateable)
     output_bfd->flags &= ~EXEC_P;
   else
     output_bfd->flags |= EXEC_P;
-
+#endif
   ldwrite ();
 
   if (config.map_file != NULL)

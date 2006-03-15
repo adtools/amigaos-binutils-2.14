@@ -2,7 +2,7 @@
 
 AUTOMAKE_OPTIONS = cygnus
 
-DOCFILES = aoutx.texi  archive.texi archures.texi \
+DOCFILES = amiga.texi amigalink.texi aoutx.texi  archive.texi archures.texi \
 	bfdt.texi  cache.texi coffcode.texi \
 	core.texi elf.texi elfcode.texi  format.texi \
 	libbfd.texi bfdwin.texi bfdio.texi \
@@ -28,6 +28,7 @@ SRCDOC = $(srcdir)/../aoutx.h  $(srcdir)/../archive.c \
 	$(srcdir)/../cache.c $(srcdir)/../coffcode.h \
 	$(srcdir)/../corefile.c $(srcdir)/../elf.c \
 	$(srcdir)/../elfcode.h  $(srcdir)/../format.c \
+	$(srcdir)/../amigaos.c $(srcdir)/../amigaoslink.c \
 	$(srcdir)/../libbfd.c $(srcdir)/../opncls.c \
 	$(srcdir)/../reloc.c  $(srcdir)/../section.c \
 	$(srcdir)/../syms.c  $(srcdir)/../targets.c \
@@ -55,14 +56,15 @@ info_TEXINFOS = bfd.texinfo
 MKDOC = chew$(EXEEXT_FOR_BUILD)
 
 $(MKDOC): chew.o
-	$(CC_FOR_BUILD) -o $(MKDOC) chew.o $(LOADLIBES) $(LDFLAGS)
+	$(CC_FOR_BUILD) $(H_CFLAGS) $(CFLAGS) -o $(MKDOC) chew.o $(LOADLIBES) $(LDFLAGS)
 
 chew.o: chew.c
 	$(CC_FOR_BUILD) -c -I.. -I$(srcdir)/.. -I$(srcdir)/../../include -I$(srcdir)/../../intl -I../../intl $(H_CFLAGS) $(CFLAGS) $(srcdir)/chew.c
 
 protos: libbfd.h libcoff.h bfd.h
 
-bfd.info bfd.dvi: $(DOCFILES) bfdsumm.texi bfd.texinfo
+bfd.info bfd.dvi bfd.guide: $(DOCFILES) bfdsumm.texi bfd.texinfo
+
 
 # We can't replace these rules with an implicit rule, because
 # makes without VPATH support couldn't find the .h files in `..'.
@@ -208,6 +210,18 @@ s-linker: $(MKDOC) $(srcdir)/../linker.c $(srcdir)/doc.str
 	touch s-linker
 linker.texi: s-linker
 
+s-amiga: $(MKDOC) $(srcdir)/../amigaos.c $(srcdir)/doc.str
+	./$(MKDOC) -f $(srcdir)/doc.str <$(srcdir)/../amigaos.c >amiga.tmp
+	$(srcdir)/../../move-if-change amiga.tmp amiga.texi
+	touch s-amiga
+amiga.texi: s-amiga
+
+s-amigalink: $(MKDOC) $(srcdir)/../amigaoslink.c $(srcdir)/doc.str
+	./$(MKDOC) -f $(srcdir)/doc.str <$(srcdir)/../amigaoslink.c >amigalink.tmp
+	$(srcdir)/../../move-if-change amigalink.tmp amigalink.texi
+	touch s-amigalink
+amigalink.texi: s-amigalink
+
 LIBBFD_H_DEP = \
 	$(srcdir)/../libbfd-in.h	\
 	$(srcdir)/../init.c		\
@@ -304,4 +318,4 @@ MAINTAINERCLEANFILES = $(DOCFILES)
 
 # We want install to imply install-info as per GNU standards, despite the
 # cygnus option.
-install: install-info
+#install: install-info

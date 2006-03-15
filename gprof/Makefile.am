@@ -36,7 +36,7 @@ noinst_HEADERS = \
 BUILT_SOURCES = flat_bl.c bsd_callg_bl.c fsf_callg_bl.c
 EXTRA_DIST    = $(BUILT_SOURCES) bbconv.pl $(man_MANS)
 
-diststuff: $(BUILT_SOURCES) info $(man_MANS)
+diststuff: $(BUILT_SOURCES) info guide $(man_MANS)
 
 .m.c:
 	awk -f $(srcdir)/gen-c-prog.awk > ./$*.c \
@@ -73,7 +73,7 @@ Makefile: $(BFDDIR)/configure.in
 
 # We want install to imply install-info as per GNU standards, despite the
 # cygnus option.
-install: install-info
+#install: install-info
 
 # Targets to rebuild dependencies in this Makefile.
 # Have to get rid of DEP1 here so that "$?" later includes all sources.

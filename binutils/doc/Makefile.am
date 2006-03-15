@@ -157,7 +157,7 @@ $(DEMANGLER_NAME).1: cxxfilt.man Makefile
 
 # We want install to imply install-info as per GNU standards, despite the
 # cygnus option.
-install: install-info
+#install: install-info
 
 # Maintenance
 

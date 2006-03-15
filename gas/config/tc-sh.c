@@ -1855,7 +1855,7 @@ insert (where, how, pcrel, op)
 	       2,
 	       &op->immediate,
 	       pcrel,
-	       how);
+	       how, 0);
 }
 
 static void
@@ -1930,7 +1930,7 @@ insert_loop_bounds (output, operand)
       symbol_table_insert (end_sym);
       end_sym->sy_value = operand[1].immediate;
       end_sym->sy_value.X_add_number += 2;
-      fix_new (frag_now, frag_now_fix (), 2, end_sym, 0, 1, BFD_RELOC_SH_LABEL);
+      fix_new (frag_now, frag_now_fix (), 2, end_sym, 0, 1, BFD_RELOC_SH_LABEL, 0);
     }
 
   output = frag_more (2);
@@ -2374,7 +2374,7 @@ md_assemble (str)
       /* Output a CODE reloc to tell the linker that the following
          bytes are instructions, not data.  */
       fix_new (frag_now, frag_now_fix (), 2, &abs_symbol, 0, 0,
-	       BFD_RELOC_SH_CODE);
+	       BFD_RELOC_SH_CODE, 0);
       seg_info (now_seg)->tc_segment_info_data.in_code = 1;
     }
 
@@ -2448,7 +2448,7 @@ sh_frob_label ()
       if (frag_now != last_label_frag
 	  || offset != last_label_offset)
 	{
-	  fix_new (frag_now, offset, 2, &abs_symbol, 0, 0, BFD_RELOC_SH_LABEL);
+	  fix_new (frag_now, offset, 2, &abs_symbol, 0, 0, BFD_RELOC_SH_LABEL, 0);
 	  last_label_frag = frag_now;
 	  last_label_offset = offset;
 	}
@@ -2465,7 +2465,7 @@ sh_flush_pending_output ()
       && seg_info (now_seg)->tc_segment_info_data.in_code)
     {
       fix_new (frag_now, frag_now_fix (), 2, &abs_symbol, 0, 0,
-	       BFD_RELOC_SH_DATA);
+	       BFD_RELOC_SH_DATA, 0);
       seg_info (now_seg)->tc_segment_info_data.in_code = 0;
     }
 }
@@ -2581,7 +2581,7 @@ s_uses (ignore)
       return;
     }
 
-  fix_new_exp (frag_now, frag_now_fix (), 2, &ex, 1, BFD_RELOC_SH_USES);
+  fix_new_exp (frag_now, frag_now_fix (), 2, &ex, 1, BFD_RELOC_SH_USES, 0);
 
   demand_empty_rest_of_line ();
 }
@@ -2894,7 +2894,7 @@ sh_frob_section (abfd, sec, ignore)
       subseg_change (sec, 0);
       fix_new (fscan->fx_frag,
 	       S_GET_VALUE (sym) - fscan->fx_frag->fr_address,
-	       4, &abs_symbol, info.count, 0, BFD_RELOC_SH_COUNT);
+	       4, &abs_symbol, info.count, 0, BFD_RELOC_SH_COUNT, 0);
     }
 }
 
@@ -2951,7 +2951,7 @@ md_convert_frag (headers, seg, fragP)
     case C (COND_JUMP_DELAY, COND8):
       subseg_change (seg, 0);
       fix_new (fragP, fragP->fr_fix, 2, fragP->fr_symbol, fragP->fr_offset,
-	       1, BFD_RELOC_SH_PCDISP8BY2);
+	       1, BFD_RELOC_SH_PCDISP8BY2, 0);
       fragP->fr_fix += 2;
       fragP->fr_var = 0;
       break;
@@ -2959,7 +2959,7 @@ md_convert_frag (headers, seg, fragP)
     case C (UNCOND_JUMP, UNCOND12):
       subseg_change (seg, 0);
       fix_new (fragP, fragP->fr_fix, 2, fragP->fr_symbol, fragP->fr_offset,
-	       1, BFD_RELOC_SH_PCDISP12BY2);
+	       1, BFD_RELOC_SH_PCDISP12BY2, 0);
       fragP->fr_fix += 2;
       fragP->fr_var = 0;
       break;
@@ -3021,13 +3021,13 @@ md_convert_frag (headers, seg, fragP)
 		 seg_info (seg)->dot,
 #endif
 		 fragP->fr_address + fragP->fr_fix + (delay ? 4 : 6),
-		 1, BFD_RELOC_SH_PCDISP8BY2);
+		 1, BFD_RELOC_SH_PCDISP8BY2, 0);
 
 	/* Set up a jump instruction.  */
 	buffer[highbyte + 2] = 0xa0;
 	buffer[lowbyte + 2] = 0;
 	fix_new (fragP, fragP->fr_fix + 2, 2, fragP->fr_symbol,
-		 fragP->fr_offset, 1, BFD_RELOC_SH_PCDISP12BY2);
+		 fragP->fr_offset, 1, BFD_RELOC_SH_PCDISP12BY2, 0);
 
 	if (delay)
 	  {
@@ -3210,7 +3210,7 @@ sh_handle_align (frag)
       && frag->fr_offset > 1
       && now_seg != bss_section)
     fix_new (frag, frag->fr_fix, 2, &abs_symbol, frag->fr_offset, 0,
-	     BFD_RELOC_SH_ALIGN);
+	     BFD_RELOC_SH_ALIGN, 0);
 }
 
 /* See whether the relocation should be resolved locally.  */

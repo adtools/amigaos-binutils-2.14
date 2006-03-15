@@ -24,6 +24,10 @@
 #include "libbfd.h"
 #include "elf-bfd.h"
 
+#ifndef ELF32_I386_RELOCATABLE_EXECUTABLES
+#define ELF32_I386_RELOCATABLE_EXECUTABLES 0
+#endif
+
 static reloc_howto_type *elf_i386_reloc_type_lookup
   PARAMS ((bfd *, bfd_reloc_code_real_type));
 static void elf_i386_info_to_howto_rel
@@ -1105,7 +1109,7 @@ elf_i386_check_relocs (abfd, info, sec, relocs)
 	     may need to keep relocations for symbols satisfied by a
 	     dynamic library if we manage to avoid copy relocs for the
 	     symbol.  */
-	  if ((info->shared
+	  if (((ELF32_I386_RELOCATABLE_EXECUTABLES || info->shared)
 	       && (sec->flags & SEC_ALLOC) != 0
 	       && (r_type != R_386_PC32
 		   || (h != NULL
@@ -1673,7 +1677,7 @@ allocate_dynrelocs (h, inf)
      space for pc-relative relocs that have become local due to symbol
      visibility changes.  */
 
-  if (info->shared)
+  if (ELF32_I386_RELOCATABLE_EXECUTABLES || info->shared)
     {
       if ((h->elf_link_hash_flags & ELF_LINK_HASH_DEF_REGULAR) != 0
 	  && ((h->elf_link_hash_flags & ELF_LINK_FORCED_LOCAL) != 0
@@ -2421,7 +2425,7 @@ elf_i386_relocate_section (output_bfd, info, input_bfd, input_section,
 	      || (input_section->flags & SEC_ALLOC) == 0)
 	    break;
 
-	  if ((info->shared
+	  if (((ELF32_I386_RELOCATABLE_EXECUTABLES || info->shared)
 	       && (r_type != R_386_PC32
 		   || (h != NULL
 		       && h->dynindx != -1
@@ -2466,6 +2470,7 @@ elf_i386_relocate_section (output_bfd, info, input_bfd, input_section,
 		memset (&outrel, 0, sizeof outrel);
 	      else if (h != NULL
 		       && h->dynindx != -1
+		       && !(ELF32_I386_RELOCATABLE_EXECUTABLES && !info->shared)
 		       && (r_type == R_386_PC32
 			   || !info->shared
 			   || !info->symbolic
@@ -3384,14 +3389,20 @@ elf_i386_finish_dynamic_sections (output_bfd, info)
 #define elf_backend_copy_indirect_symbol      elf_i386_copy_indirect_symbol
 #define elf_backend_create_dynamic_sections   elf_i386_create_dynamic_sections
 #define elf_backend_fake_sections	      elf_i386_fake_sections
+#ifndef elf_backend_finish_dynamic_sections
 #define elf_backend_finish_dynamic_sections   elf_i386_finish_dynamic_sections
+#endif
+#ifndef elf_backend_finish_dynamic_symbol
 #define elf_backend_finish_dynamic_symbol     elf_i386_finish_dynamic_symbol
+#endif
 #define elf_backend_gc_mark_hook	      elf_i386_gc_mark_hook
 #define elf_backend_gc_sweep_hook	      elf_i386_gc_sweep_hook
 #define elf_backend_grok_prstatus	      elf_i386_grok_prstatus
 #define elf_backend_grok_psinfo		      elf_i386_grok_psinfo
 #define elf_backend_reloc_type_class	      elf_i386_reloc_type_class
+#ifndef elf_backend_relocate_section
 #define elf_backend_relocate_section	      elf_i386_relocate_section
+#endif
 #define elf_backend_size_dynamic_sections     elf_i386_size_dynamic_sections
 
 #include "elf32-target.h"

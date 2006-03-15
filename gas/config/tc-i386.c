@@ -66,6 +66,12 @@
 #endif
 #endif
 
+/* Tell the main code what the endianness is.  */
+extern int target_big_endian;
+
+/* Whether or not, we've set target_big_endian.  */
+static int set_target_endian = 0;
+
 static INLINE unsigned int mode_from_disp_size PARAMS ((unsigned int));
 static INLINE int fits_in_signed_byte PARAMS ((offsetT));
 static INLINE int fits_in_unsigned_byte PARAMS ((offsetT));
@@ -192,6 +198,7 @@ const char extra_symbol_chars[] = "*%-([";
 #if (defined (TE_I386AIX)				\
      || ((defined (OBJ_ELF) || defined (OBJ_MAYBE_ELF))	\
 	 && !defined (TE_LINUX)				\
+	 && !defined (TE_Amithlon)			\
 	 && !defined (TE_FreeBSD)			\
 	 && !defined (TE_NetBSD)))
 /* This array holds the chars that always start a comment.  If the
@@ -977,6 +984,15 @@ md_begin ()
     for (p = operand_special_chars; *p != '\0'; p++)
       operand_chars[(unsigned char) *p] = *p;
   }
+
+#if defined(OBJ_ELF) && TARGET_BYTES_BIG_ENDIAN == 1
+  /* Tell the main code what the endianness is if it is not overidden by the user.  */
+  if (!set_target_endian)
+    {
+      set_target_endian = 1;
+      target_big_endian = TARGET_BYTES_BIG_ENDIAN;
+    }
+#endif
 
 #if defined (OBJ_ELF) || defined (OBJ_MAYBE_ELF)
   if (OUTPUT_FLAVOR == bfd_target_elf_flavour)
@@ -3052,7 +3068,7 @@ output_jump ()
   *p++ = i.tm.base_opcode;
 
   fixP = fix_new_exp (frag_now, p - frag_now->fr_literal, size,
-		      i.op[0].disps, 1, reloc (size, 1, 1, i.reloc[0]));
+		      i.op[0].disps, 1, reloc (size, 1, 1, i.reloc[0]), 0);
 
   /* All jumps handled here are signed, but don't use a signed limit
      check for 32 and 16 bit jumps as we want to allow wrap around at
@@ -3118,7 +3134,7 @@ output_interseg_jump ()
     }
   else
     fix_new_exp (frag_now, p - frag_now->fr_literal, size,
-		 i.op[1].imms, 0, reloc (size, 0, 0, i.reloc[1]));
+		 i.op[1].imms, 0, reloc (size, 0, 0, i.reloc[1]), 0);
   if (i.op[0].imms->X_op != O_constant)
     as_bad (_("can't handle non absolute segment in `%s'"),
 	    i.tm.name);
@@ -3200,8 +3216,7 @@ output_insn ()
 	      && i.rm.mode != 3
 	      && !(i.base_reg && (i.base_reg->reg_type & Reg16) != 0))
 	    {
-	      p = frag_more (1);
-	      md_number_to_chars (p,
+	      p = frag_more (1);	      md_number_to_chars (p,
 				  (valueT) (i.sib.base << 0
 					    | i.sib.index << 3
 					    | i.sib.scale << 6),
@@ -3334,7 +3349,7 @@ output_disp (insn_start_frag, insn_start_off)
 		}
 #endif
 	      fix_new_exp (frag_now, p - frag_now->fr_literal, size,
-			   i.op[n].disps, pcrel, reloc_type);
+			   i.op[n].disps, pcrel, reloc_type, 0);
 	    }
 	}
     }
@@ -3470,7 +3485,7 @@ output_imm (insn_start_frag, insn_start_off)
 		}
 #endif
 	      fix_new_exp (frag_now, p - frag_now->fr_literal, size,
-			   i.op[n].imms, 0, reloc_type);
+			   i.op[n].imms, 0, reloc_type, 0);
 	    }
 	}
     }
@@ -3585,7 +3600,7 @@ x86_cons_fix_new (frag, off, len, exp)
 {
   RELOC_ENUM r = reloc (len, 0, 0, got_reloc);
   got_reloc = NO_RELOC;
-  fix_new_exp (frag, off, len, exp, 0, r);
+  fix_new_exp (frag, off, len, exp, 0, r, 0);
 }
 
 void
@@ -4374,7 +4389,7 @@ md_estimate_size_before_relax (fragP, segment)
 	  fix_new (fragP, old_fr_fix, size,
 		   fragP->fr_symbol,
 		   fragP->fr_offset, 1,
-		   reloc_type);
+		   reloc_type, 0);
 	  break;
 
 	case COND_JUMP86:
@@ -4393,7 +4408,7 @@ md_estimate_size_before_relax (fragP, segment)
 	      fix_new (fragP, old_fr_fix + 2, 2,
 		       fragP->fr_symbol,
 		       fragP->fr_offset, 1,
-		       reloc_type);
+		       reloc_type, 0);
 	      break;
 	    }
 	  /* Fall through.  */
@@ -4407,7 +4422,7 @@ md_estimate_size_before_relax (fragP, segment)
 	      fixP = fix_new (fragP, old_fr_fix, 1,
 			      fragP->fr_symbol,
 			      fragP->fr_offset, 1,
-			      BFD_RELOC_8_PCREL);
+			      BFD_RELOC_8_PCREL, 0);
 	      fixP->fx_signed = 1;
 	      break;
 	    }
@@ -4421,7 +4436,7 @@ md_estimate_size_before_relax (fragP, segment)
 	  fix_new (fragP, old_fr_fix + 1, size,
 		   fragP->fr_symbol,
 		   fragP->fr_offset, 1,
-		   reloc_type);
+		   reloc_type, 0);
 	  break;
 
 	default:
@@ -4726,7 +4741,15 @@ md_apply_fix3 (fixP, valP, seg)
       value = 0;
     }
 #endif
+
+  if ((bfd_get_section_flags (stdoutput, seg) & SEC_CODE) != 0)
+  {
+    number_to_chars_littleendian (p, value, fixP->fx_size);
+  }
+  else
+  {
   md_number_to_chars (p, value, fixP->fx_size);
+  }
 }
 
 #define MAX_LITTLENUMS 6
@@ -4871,7 +4894,11 @@ parse_register (reg_string, end_op)
 }
 
 #if defined (OBJ_ELF) || defined (OBJ_MAYBE_ELF)
+# if TARGET_BYTES_BIG_ENDIAN == 1
+const char *md_shortopts = "km:VQ:sq";
+# else
 const char *md_shortopts = "kVQ:sq";
+# endif
 #else
 const char *md_shortopts = "q";
 #endif
@@ -4894,6 +4921,28 @@ md_parse_option (c, arg)
 {
   switch (c)
     {
+#if defined (OBJ_ELF) && TARGET_BYTES_BIG_ENDIAN == 1
+    case 'm':
+      /* -mlittle/-mbig set the endianess */
+      if (strcmp (arg, "little") == 0 || strcmp (arg, "little-endian") == 0)
+      {
+	target_big_endian = 0;
+	set_target_endian = 1;
+	break;
+      }
+      else if (strcmp (arg, "big") == 0 || strcmp (arg, "big-endian") == 0)
+      {
+	target_big_endian = 1;
+	set_target_endian = 1;
+	break;
+      }
+      else
+      {
+	as_bad ("invalid switch -m%s", arg);
+	return 0;
+      }
+#endif
+
     case 'q':
       quiet_warnings = 1;
       break;
@@ -4951,6 +5000,13 @@ md_show_usage (stream)
      FILE *stream;
 {
 #if defined (OBJ_ELF) || defined (OBJ_MAYBE_ELF)
+# if TARGET_BYTES_BIG_ENDIAN == 1
+  fprintf(stream, "\
+ i386be options:\n\
+  -mlittle, -mlittle-endian\n\
+                          generate code for a little endian machine\n\
+  -mbig, -mbig-endian     generate code for a big endian machine\n");
+# endif
   fprintf (stream, _("\
   -Q                      ignored\n\
   -V                      print assembler version number\n\
@@ -4961,6 +5017,24 @@ md_show_usage (stream)
   fprintf (stream, _("\
   -q                      quieten some warnings\n"));
 #endif
+}
+
+/* Write a value out to the object file, using the appropriate
+   endianness.  */
+void
+md_number_to_chars (buf, val, n)
+  char *buf;
+  valueT val;
+  int n;
+{
+  if (target_big_endian && ((bfd_get_section_flags (stdoutput, now_seg) & SEC_CODE) == 0))
+  {
+    number_to_chars_bigendian (buf, val, n);
+  }
+  else
+  {
+    number_to_chars_littleendian (buf, val, n);
+  }
 }
 
 #ifdef BFD_ASSEMBLER

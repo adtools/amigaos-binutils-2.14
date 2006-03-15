@@ -38,7 +38,7 @@ c4x*)            targ_archs=bfd_tic4x_arch ;;
 c54x*)	         targ_archs=bfd_tic54x_arch ;;
 dlx*)		 targ_archs=bfd_dlx_arch ;;
 hppa*)	         targ_archs=bfd_hppa_arch ;;
-i[3456]86)       targ_archs=bfd_i386_arch ;;
+i[3456]86*)      targ_archs=bfd_i386_arch ;;
 i370)            targ_archs=bfd_i370_arch ;;
 m6811*|m68hc11*) targ_archs="bfd_m68hc11_arch bfd_m68hc12_arch" ;;
 m6812*|m68hc12*) targ_archs="bfd_m68hc12_arch bfd_m68hc11_arch" ;;
@@ -543,6 +543,11 @@ case "${targ}" in
     targ_selfvecs=i386chaos_vec
     ;;
 
+  i[3456]86be-*-amithlon*)
+    targ_defvec=bfd_elf32_i386be_amithlon_vec
+    targ_selvecs="bfd_elf32_i386_vec bfd_elf32_i386be_amithlon_vec"
+    ;;
+
   i860-*-mach3* | i860-*-osf1* | i860-*-coff*)
     targ_defvec=i860coff_vec
     ;;
@@ -604,6 +609,10 @@ case "${targ}" in
     ;;
   m68*-motorola-sysv*)
     targ_defvec=m68ksysvcoff_vec
+    ;;
+  m68*-*-amigaos*)
+    targ_defvec=amiga_vec
+    targ_selvecs="aout_amiga_vec amiga_vec"
     ;;
   m68*-hp-bsd*)
     targ_defvec=hp300bsd_vec
@@ -684,7 +693,7 @@ case "${targ}" in
     targ_selvecs="m68kcoff_vec versados_vec tekhex_vec"
     targ_underscore=yes
     ;;
-  m68*-cbm-*)
+  m68*-cbm-amix)
     targ_defvec=bfd_elf32_m68k_vec
     targ_selvecs=m68kcoff_vec
     ;;
@@ -892,6 +901,18 @@ case "${targ}" in
 	targ_cflags=-DSMALL_ARCHIVE;;
     esac
     ;;
+  powerpc-*-amigaoshunk*)
+    targ_defvec=amiga_vec
+    targ_selvecs="bfd_elf32_powerpc_vec bfd_elf32_powerpcle_vec aout_amiga_vec"
+    ;;
+  powerpc-*-amigaos*)
+    targ_defvec=bfd_elf32_powerpc_vec
+    targ_selvecs="bfd_elf32_powerpcle_vec"
+    ;;
+  powerpc-*-morphos*)
+    targ_defvec=bfd_elf32_morphos_vec
+    targ_selvecs="bfd_elf32_morphos_vec"
+    ;;
 #ifdef BFD64
   powerpc64-*-aix*)
     targ_defvec=rs6000coff64_vec
@@ -907,6 +928,10 @@ case "${targ}" in
     targ_selvecs="bfd_elf64_powerpc_vec bfd_elf32_powerpcle_vec bfd_elf32_powerpc_vec rs6000coff_vec rs6000coff64_vec"
     ;;
 #endif
+  powerpc-*-amiga*)
+    targ_defvec=bfd_elf32_amiga_vec
+    targ_selvecs="rs6000coff_vec bfd_elf32_powerpc_vec bfd_elf32_powerpcle_vec ppcboot_vec"
+    ;;
   powerpc-*-*bsd* | powerpc-*-elf* | powerpc-*-sysv4* | powerpc-*-eabi* | \
   powerpc-*-solaris2* | powerpc-*-linux-gnu* | powerpc-*-rtems* | \
   powerpc-*-chorus* | powerpc-*-vxworks* | powerpc-*-windiss*)

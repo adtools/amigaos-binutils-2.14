@@ -27,7 +27,14 @@
 struct fix;
 #endif
 
+/* Set the endianness we are using.  Default to little endian.  */
+#ifndef TARGET_BYTES_BIG_ENDIAN
 #define TARGET_BYTES_BIG_ENDIAN	0
+#endif
+
+#if !defined(OBJ_ELF) && TARGET_BYTES_BIG_ENDIAN == 1
+ #error Big endian i386 tested only for ELF!
+#endif
 
 #ifdef TE_LYNX
 #define TARGET_FORMAT		"coff-i386-lynx"
@@ -62,6 +69,9 @@ extern unsigned long i386_mach PARAMS ((void));
 
 #ifdef TE_FreeBSD
 #define ELF_TARGET_FORMAT	"elf32-i386-freebsd"
+#endif
+#ifdef TE_Amithlon
+#define ELF_TARGET_FORMAT       "elf32-i386be-amithlon"
 #endif
 #ifndef ELF_TARGET_FORMAT
 #define ELF_TARGET_FORMAT	"elf32-i386"
@@ -451,7 +461,7 @@ arch_entry;
 #define TC_PARSE_CONS_EXPRESSION(EXP, NBYTES) x86_cons (EXP, NBYTES)
 extern void x86_cons PARAMS ((expressionS *, int));
 
-#define TC_CONS_FIX_NEW(FRAG,OFF,LEN,EXP) x86_cons_fix_new(FRAG, OFF, LEN, EXP)
+#define TC_CONS_FIX_NEW(FRAG,OFF,LEN,EXP,BASEREL) x86_cons_fix_new(FRAG, OFF, LEN, EXP)
 extern void x86_cons_fix_new
   PARAMS ((fragS *, unsigned int, unsigned int, expressionS *));
 #endif
@@ -538,7 +548,7 @@ if (fragP->fr_type == rs_align_code) 					\
 void i386_print_statistics PARAMS ((FILE *));
 #define tc_print_statistics i386_print_statistics
 
-#define md_number_to_chars number_to_chars_littleendian
+/* #define md_number_to_chars number_to_chars_littleendian */
 
 #ifdef SCO_ELF
 #define tc_init_after_args() sco_id ()

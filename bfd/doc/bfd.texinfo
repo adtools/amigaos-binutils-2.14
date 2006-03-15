@@ -299,6 +299,7 @@ structures.
 * aout ::	a.out backends
 * coff ::	coff backends
 * elf  ::	elf backends
+* amiga ::      amigaos backend
 * mmo  ::	mmo backend
 @ignore
 * oasys ::	oasys backends
@@ -315,12 +316,16 @@ All of BFD lives in one directory.
 @node coff, elf, aout, BFD back ends
 @include  coffcode.texi
 
-@node elf, mmo, coff, BFD back ends
+@node elf, amiga, coff, BFD back ends
 @include  elf.texi
 @c Leave this out until the file has some actual contents...
 @c @include  elfcode.texi
 
-@node mmo,  , elf, BFD back ends
+@node amiga, mmo, elf, BFD back ends
+@include amiga.texi
+@include amigalink.texi
+
+@node mmo, , amiga, BFD back ends
 @include  mmo.texi
 
 @node GNU Free Documentation License, Index, BFD back ends, Top

@@ -119,7 +119,8 @@ changequote([,])dnl
       arm*|xscale*|strongarm*)    cpu_type=arm endian=little ;;
       hppa*)		cpu_type=hppa ;;
 changequote(,)dnl
-      i[3456]86)	cpu_type=i386 arch=i386;;
+      i[3456]86)	cpu_type=i386 arch=i386 endian=little;;
+      i[3456]86be)	cpu_type=i386 arch=i386 endian=big;;
       x86_64)		cpu_type=i386 arch=x86_64;;
       ia64)		cpu_type=ia64 ;;
       ip2k)             cpu_type=ip2k endian=big ;; 
@@ -263,6 +264,7 @@ changequote([,])dnl
       i386-*-linux*coff*)		fmt=coff em=linux ;;
       i386-*-linux-gnu*)		fmt=elf em=linux ;;
       x86_64-*-linux-gnu*)		fmt=elf em=linux ;;
+      i386-*-amithlon*)	    		fmt=elf em=amithlon ;;
       i386-*-lynxos*)			fmt=coff em=lynx ;;
 changequote(,)dnl
       i386-*-sysv[45]*)			fmt=elf ;;
@@ -326,6 +328,8 @@ changequote([,])dnl
       m68hc11-*-* | m6811-*-*)		fmt=elf ;;
       m68hc12-*-* | m6812-*-*)		fmt=elf ;;
 
+      m68*-*-amigaoshunk)   		fmt=amigahunk em=amiga bfd_gas=yes ;;
+      m68*-*-amigaos*)      		fmt=aout em=amiga ;;
       m68k-*-vxworks*)			fmt=aout em=sun3 ;;
       m68k-ericsson-ose)		fmt=aout em=sun3 ;;
       m68k-*-sunos*)			fmt=aout em=sun3 ;;
@@ -387,6 +391,8 @@ changequote([,])dnl
       or32-*-elf)			fmt=elf ;;
       pj*)				fmt=elf ;;
 
+      ppc-*-amiga*)         		fmt=elf em=amigaos ;;
+      ppc-*-morphos*)			fmt=elf em=morphos ;;
       ppc-*-pe | ppc-*-cygwin*)		fmt=coff em=pe ;;
       ppc-*-winnt*)			fmt=coff em=pe ;;
       ppc-*-aix5*)			fmt=coff em=aix5 ;;
@@ -895,7 +901,7 @@ AC_DEFINE_UNQUOTED(DEFAULT_EMULATION, "$DEFAULT_EMULATION",
 
 case ${primary_bfd_gas}-${target_cpu_type}-${obj_format} in
   yes-*-coff)	need_bfd=yes ;;
-  no-*-coff)	need_bfd=yes
+  no-*-coff | yes-m68k-amigahunk | no-m68k-amigahunk)	need_bfd=yes
 		AC_DEFINE(MANY_SEGMENTS, 1, [old COFF support?]) ;;
 esac
 
@@ -947,6 +953,17 @@ AC_DEFINE_UNQUOTED(TARGET_VENDOR,	"${target_vendor}", [Target vendor.])
 AC_DEFINE_UNQUOTED(TARGET_OS,		"${target_os}",    [Target OS.])
 
 AC_PROG_CC
+
+### begin-GG-local
+# Check for additional host specific CFLAGS.
+AC_MSG_CHECKING(for host dependent CFLAGS)
+other_host_cflags=""
+case "${host}" in
+	m68*-*-amigaos*)	other_host_cflags="-mstackextend" ;;
+esac
+test -n "$other_host_cflags" && CFLAGS="$CFLAGS $other_host_cflags"
+AC_MSG_RESULT($other_host_cflags)
+### end-GG-local
 
 AC_PROG_YACC
 AM_PROG_LEX

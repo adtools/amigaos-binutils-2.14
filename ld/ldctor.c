@@ -266,10 +266,13 @@ ldctor_build_sets ()
       /* If the symbol is defined, we may have been invoked from
 	 collect, and the sets may already have been built, so we do
 	 not do anything.  */
-      if (p->h->type == bfd_link_hash_defined
-	  || p->h->type == bfd_link_hash_defweak)
+      /* dgv -- libnix v1.1 uses absolute sets that are also explicitly
+	 defined in the library so that the sets need to be build even
+	 if the symbol is defined */
+      if ((output_bfd->xvec->flavour != bfd_target_amiga_flavour) &&
+	  (p->h->type == bfd_link_hash_defined
+	  || p->h->type == bfd_link_hash_defweak))
 	continue;
-
       /* For each set we build:
 	   set:
 	     .long number_of_elements
@@ -362,14 +365,21 @@ ldctor_build_sets ()
 	      if (e->name != NULL)
 		minfo ("%T\n", e->name);
 	      else
+		if (e->section->owner)
 		minfo ("%G\n", e->section->owner, e->section, e->value);
+		else
+		  minfo ("%s\n", "** ABS **");
 	    }
 
 	  /* Need SEC_KEEP for --gc-sections.  */
 	  if (! bfd_is_abs_section (e->section))
 	    e->section->flags |= SEC_KEEP;
 
-	  if (link_info.relocateable)
+	  /* dgv -- on the amiga, we want the constructors to be relocateable
+	     objects. However, this should be arranged somewhere else (FIXME) */
+	  if (link_info.relocateable ||
+	      (output_bfd->xvec->flavour == bfd_target_amiga_flavour &&
+	       e->section != bfd_abs_section_ptr))
 	    lang_add_reloc (p->reloc, howto, e->section, e->name,
 			    exp_intop (e->value));
 	  else

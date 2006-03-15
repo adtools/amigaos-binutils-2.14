@@ -162,7 +162,10 @@ ALL_MACHINES_CFILES = \
 # The .o files needed by all of the 32 bit vectors that are configured into
 # target_vector in targets.c if configured with --enable-targets=all.
 BFD32_BACKENDS = \
+	amigaos.lo \
+	amigaoslink.lo \
 	aout-adobe.lo \
+	aout-amiga.lo \
 	aout-arm.lo \
 	aout-cris.lo \
 	aout-ns32k.lo \
@@ -211,6 +214,7 @@ BFD32_BACKENDS = \
 	elf32-arc.lo \
 	elfarm-oabi.lo \
 	elfarm-nabi.lo \
+	elf32-amiga.lo \
 	elf32-avr.lo \
 	elf32-cris.lo \
 	elf32-d10v.lo \
@@ -237,6 +241,7 @@ BFD32_BACKENDS = \
 	elf-m10200.lo \
 	elf-m10300.lo \
 	elf32-mcore.lo \
+	elf32-morphos.lo \
 	elfxx-mips.lo \
 	elf32-mips.lo \
 	elf32-msp430.lo \
@@ -326,7 +331,10 @@ BFD32_BACKENDS = \
 	xtensa-modules.lo
 
 BFD32_BACKENDS_CFILES = \
+	amigaos.c \
+	amigaoslink.c \
 	aout-adobe.c \
+	aout-amiga.c \
 	aout-arm.c \
 	aout-cris.c \
 	aout-ns32k.c \
@@ -375,6 +383,7 @@ BFD32_BACKENDS_CFILES = \
 	elf32-arc.c \
 	elfarm-oabi.c \
 	elfarm-nabi.c \
+	elf32-amiga.c \
 	elf32-avr.c \
 	elf32-cris.c \
 	elf32-d10v.c \
@@ -400,6 +409,7 @@ BFD32_BACKENDS_CFILES = \
 	elf-m10200.c \
 	elf-m10300.c \
 	elf32-mcore.c \
+	elf32-morphos.lo \
 	elfxx-mips.c \
 	elf32-mips.c \
 	elf32-msp430.c \
@@ -587,7 +597,7 @@ SOURCE_HFILES = \
 	aout-target.h aoutf1.h aoutx.h coffcode.h coffswap.h ecoffswap.h \
 	elf-bfd.h elf-hppa.h elf32-arm.h elf32-hppa.h \
 	elf64-hppa.h elfcode.h elfcore.h elflink.h \
-	freebsd.h genlink.h go32stub.h \
+	freebsd.h genlink.h go32stub.h libamiga.h \
 	libaout.h libbfd.h libcoff.h libecoff.h libhppa.h libieee.h \
 	libnlm.h liboasys.h libpei.h libxcoff.h mach-o.h \
 	netbsd.h nlm-target.h nlmcode.h nlmswap.h ns32k.h \
@@ -969,6 +979,9 @@ cpu-w65.lo: cpu-w65.c $(INCDIR)/filenames.h
 cpu-xstormy16.lo: cpu-xstormy16.c $(INCDIR)/filenames.h
 cpu-xtensa.lo: cpu-xtensa.c $(INCDIR)/filenames.h
 cpu-z8k.lo: cpu-z8k.c $(INCDIR)/filenames.h
+amigaos.lo: amigaos.c libamiga.h bfd.h
+amigaoslink.lo: bfd.h libamiga.h amigaoslink.c
+aout-amiga.lo: aout-amiga.c aoutf1.h bfd.h
 aout-adobe.lo: aout-adobe.c $(INCDIR)/filenames.h $(INCDIR)/aout/adobe.h \
   $(INCDIR)/aout/stab_gnu.h $(INCDIR)/aout/stab.def libaout.h \
   $(INCDIR)/bfdlink.h
@@ -1122,6 +1135,10 @@ efi-app-ia32.lo: efi-app-ia32.c $(INCDIR)/filenames.h \
 elf.lo: elf.c $(INCDIR)/filenames.h $(INCDIR)/bfdlink.h \
   elf-bfd.h $(INCDIR)/elf/common.h $(INCDIR)/elf/internal.h \
   $(INCDIR)/elf/external.h $(INCDIR)/libiberty.h
+elf32-amiga.lo: elf32-amiga.c $(INCDIR)/filenames.h $(INCDIR)/bfdlink.h \
+  elf-bfd.h $(INCDIR)/elf/common.h $(INCDIR)/elf/internal.h \
+  $(INCDIR)/elf/external.h $(INCDIR)/elf/ppc.h $(INCDIR)/elf/reloc-macros.h \
+  elf32-target.h
 elf32-arc.lo: elf32-arc.c $(INCDIR)/filenames.h elf-bfd.h \
   $(INCDIR)/elf/common.h $(INCDIR)/elf/internal.h $(INCDIR)/elf/external.h \
   $(INCDIR)/bfdlink.h $(INCDIR)/elf/arc.h $(INCDIR)/elf/reloc-macros.h \
@@ -1181,6 +1198,10 @@ elf32-i386.lo: elf32-i386.c $(INCDIR)/filenames.h $(INCDIR)/bfdlink.h \
   elf-bfd.h $(INCDIR)/elf/common.h $(INCDIR)/elf/internal.h \
   $(INCDIR)/elf/external.h $(INCDIR)/elf/i386.h $(INCDIR)/elf/reloc-macros.h \
   elf32-target.h
+elf32-i386-amithlon.lo: elf32-i386-amithlon.c elf32-i386.c $(INCDIR)/filenames.h \
+  $(INCDIR)/bfdlink.h elf-bfd.h $(INCDIR)/elf/common.h \
+  $(INCDIR)/elf/internal.h $(INCDIR)/elf/external.h $(INCDIR)/elf/i386.h \
+  $(INCDIR)/elf/reloc-macros.h elf32-target.h
 elf32-i860.lo: elf32-i860.c $(INCDIR)/filenames.h elf-bfd.h \
   $(INCDIR)/elf/common.h $(INCDIR)/elf/internal.h $(INCDIR)/elf/external.h \
   $(INCDIR)/bfdlink.h $(INCDIR)/elf/i860.h $(INCDIR)/elf/reloc-macros.h \
@@ -1261,6 +1282,10 @@ elf32-or32.lo: elf32-or32.c $(INCDIR)/filenames.h elf-bfd.h \
 elf32-pj.lo: elf32-pj.c $(INCDIR)/filenames.h $(INCDIR)/bfdlink.h \
   elf-bfd.h $(INCDIR)/elf/common.h $(INCDIR)/elf/internal.h \
   $(INCDIR)/elf/external.h $(INCDIR)/elf/pj.h $(INCDIR)/elf/reloc-macros.h \
+  elf32-target.h
+elf32-morphos.lo: elf32-morphos.c $(INCDIR)/filenames.h $(INCDIR)/bfdlink.h \
+  elf-bfd.h $(INCDIR)/elf/common.h $(INCDIR)/elf/internal.h \
+  $(INCDIR)/elf/external.h $(INCDIR)/elf/ppc.h $(INCDIR)/elf/reloc-macros.h \
   elf32-target.h
 elf32-ppc.lo: elf32-ppc.c $(INCDIR)/filenames.h $(INCDIR)/bfdlink.h \
   elf-bfd.h $(INCDIR)/elf/common.h $(INCDIR)/elf/internal.h \

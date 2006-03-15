@@ -49,6 +49,13 @@ Mon Dec 22 13:04:33 1997  Joel Sherrill  <joel@oarcorp.com>
         * config.bfd (i[3456]86*-go32-rtems*): Fix to be the same as
 	i[3456]86-go32.
 
+Fri Dec 19 14:25:58 1997  Daniel Verite  <daniel@brainstorm.fr>
+
+	* amigaos.c (amiga_bfd_copy_private_section_data): Add return
+ 	value. 
+ 	* amigaoslink.c (amiga_final_link): Update linker_mark fields for
+ 	input sections involved in the output.
+
 Thu Dec 18 16:01:25 1997  Doug Evans  <devans@canuck.cygnus.com>
 
 	* configure: Regenerate to get @SHELL@ substituted.
@@ -597,6 +604,16 @@ Tue Sep 23 19:03:13 1997  Ian Lance Taylor  <ian@cygnus.com>
 	(assign_file_positions_for_segments): Increment the file offset
 	for a section with contents, even if it is not loadable.
 
+Tue Sep 23 09:46:10 1997  Fred Fish  <fnf@ninemoons.com>
+
+	* amigaos.c (alloca): Only declare if not defined as macro.
+
+Mon Sep 22 10:15:30 1997  Fred Fish  <fnf@ninemoons.com>
+
+	* amigaos.c (sysdep.h): Relocate include to provided needed
+	<sys/types.h> file.
+	* amigaoslink.c (sysdep.h): Ditto, and remove <sys/types.h>.
+
 Sun Sep 21 11:03:24 1997  Nick Clifton  <nickc@cygnus.com>
 
 	* elf32-v850.c (v850_elf_final_link_relocate): Add return code
@@ -766,6 +783,12 @@ Tue Aug 26 17:26:51 1997  Ian Lance Taylor  <ian@cygnus.com>
 	* configure: Rebuild.
 	* Makefile.in: Rebuild.
 	* doc/Makefile.in: Rebuild.
+
+Mon Aug 25 16:32:00 1997  Steffen Opel  <opel@rumms.uni-mannheim.de>
+
+	* Makefile.in (guide, install-guide, clean-guide, bfd.guide): 
+	New targets for AmigaGuide documentation.
+ 	(install): Add install-info and install-guide.
 
 Mon Aug 25 16:14:34 1997  Christopher Provenzano  <proven@cygnus.com>
 
@@ -3767,6 +3790,12 @@ Fri Aug 30 11:49:19 1996  Ian Lance Taylor  <ian@cygnus.com>
 	(ihex_write_object_contents): Remove extbase; always use segbase
 	instead.
 
+Thu Aug 29 17:53:51 1996  Daniel Verite <daniel@brainstorm.eu.org>
+
+	* amigaos.c (amiga_get_section_contents): Handle sections that
+	are larger than their disksize.
+	(amiga_make_unique_section): Remove infinite loop.
+
 Thu Aug 29 16:52:17 1996  Michael Meissner  <meissner@tiktok.cygnus.com>
 
 	* configure.in (i[345]86-*-*): Recognize i686 for pentium pro.
@@ -3992,6 +4021,13 @@ Mon Aug  5 13:42:41 1996  Ian Lance Taylor  <ian@cygnus.com>
 	check dynsec when deciding whether to start a new segment for a
 	writeable section; -N will now handle this.
 
+Sun Aug  4 22:15:56 1996  Fred Fish  <fnf@ninemoons.com>
+
+	* amigaoslink.c (sys/types.h): Include before genlink.h to get
+	definition for size_t which is used in genlink.h.  This was not
+	getting defined during a cross compilation on alpha-dec-osf2.0 for
+	some reason.
+
 Thu Aug  1 22:43:08 1996  Jeffrey A Law  (law@cygnus.com)
 
 	* libhppa.h: Remove "esel" changes.  Not the right approach.
@@ -4087,6 +4123,11 @@ Fri Jul 19 18:15:51 1996  Ian Lance Taylor  <ian@cygnus.com>
 
 	* configure.in: Fix test for whether a compiler has a 64 bit
 	type.  From Jim Wilson <wilson@cygnus.com>.
+
+Thu Jul 18 16:58:11 1996  Daniel Verite <daniel@brainstorm.eu.org>
+
+	* amigaoslink.c (aout_perform_reloc): Fix baserel 16 bits relocs.
+	(my_add_to): Fix sign bug in extraction of 16 bits values.
 
 Thu Jul 18 15:39:10 1996  Ian Lance Taylor  <ian@cygnus.com>
 
@@ -4217,6 +4258,11 @@ Mon Jul  8 16:18:03 1996  Ian Lance Taylor  <ian@cygnus.com>
 	(mips_relocate_section): Permit an arbitrary number of REFHI or
 	RELHI relocs before the associated REFLO or RELLO reloc.
 
+Sun Jul  7 12:15:39 1996  Kamil Iskra <iskra@student.uci.agh.edu.pl>
+
+	* amigaos.c (amiga_write_symbols): Fix Daniel's workaround for
+	outputting long symbol names.
+
 Fri Jul  5 19:27:49 1996  Ian Lance Taylor  <ian@cygnus.com>
 
 	* aout-target.h (MY(callback)): Set reloc_count fields.
@@ -4295,6 +4341,11 @@ Fri Jun 28 11:17:00 1996  Richard Henderson  <rth@tamu.edu>
 	are found for LITERAL relocs.
 	(elf64_alpha_adjust_dynamic_symbol): If a symbol has its address
 	taken, we cannot generate a .plt entry for the symbol.
+
+Thu Jun 27 17:35:32 1996 Daniel Verite <daniel@brainstorm.eu.org>
+
+	* amigaos.c (amiga_write_object_contents): Don't output symbols
+	which are not attached to any section, such as indirect symbols.
 
 Thu Jun 27 11:24:29 1996  Ian Lance Taylor  <ian@cygnus.com>
 
@@ -4524,6 +4575,19 @@ Tue Jun 11 15:24:48 1996  Ian Lance Taylor  <ian@cygnus.com>
 	* xcofflink.c (xcoff_build_ldsyms): Set XCOFF_DEF_REGULAR for a
 	common symbol defined by the linker.  Don't export function code
 	even if export_defineds is set.
+
+Tue Jun 11 12:52:10 1996 Daniel Verite <daniel@brainstorm.eu.org>
+
+	* amigaoslink.c (mygeta4): Function removed.
+	(amiga_final_link): Search for ___a4_init symbol in the global hash
+	table and cache its value in the backend data.
+
+	* amigaos.c (write_longs): Return a boolean instead of the
+	number of longs written.
+	(write_section_contents): Split reloc hunks at 0xffff entries.
+	(amiga_write_symbols): Cut the names in hunk symbols at 124 characters
+	(workaround for an amigaos bug).
+	(amiga_handle_rest): Added a sanity check in reloc hunks parsing.
 
 Mon Jun 10 11:57:27 1996  Jeffrey A Law  (law@cygnus.com)
 

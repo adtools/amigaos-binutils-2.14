@@ -26,6 +26,17 @@ AC_CHECK_FUNCS(setmode)
 ALL_LINGUAS="fr tr sv es id da pt_BR"
 CY_GNU_GETTEXT
 
+### begin-GG-local
+# Check for additional host specific CFLAGS.
+AC_MSG_CHECKING(for host dependent CFLAGS)
+other_host_cflags=""
+case "${host}" in
+	m68*-*-amigaos*)	other_host_cflags="-mstackextend" ;;
+esac
+test -n "$other_host_cflags" && CFLAGS="$CFLAGS $other_host_cflags"
+AC_MSG_RESULT($other_host_cflags)
+### end-GG-local
+
 AM_MAINTAINER_MODE
 AC_EXEEXT
 

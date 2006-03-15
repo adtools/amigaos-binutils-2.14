@@ -1181,9 +1181,13 @@ ppc_target_format ()
 #endif
 #endif
 #ifdef OBJ_ELF
+#ifdef TE_MORPHOS
+  return "elf32-morphos";
+#else
   return (target_big_endian
 	  ? (ppc_obj64 ? "elf64-powerpc" : "elf32-powerpc")
 	  : (ppc_obj64 ? "elf64-powerpcle" : "elf32-powerpcle"));
+#endif
 #endif
 }
 
@@ -1502,6 +1506,10 @@ ppc_elf_suffix (str_p, exp_p)
     MAP ("bitfld",		(int) BFD_RELOC_PPC_EMB_BIT_FLD),
     MAP ("relsda",		(int) BFD_RELOC_PPC_EMB_RELSDA),
     MAP ("xgot",		(int) BFD_RELOC_PPC_TOC16),
+    MAP ("drel",        	(int) BFD_RELOC_PPC_MORPHOS_DREL),
+    MAP ("drell",       	(int) BFD_RELOC_PPC_MORPHOS_DREL_LO),
+    MAP ("drelh",       	(int) BFD_RELOC_PPC_MORPHOS_DREL_HI),
+    MAP ("drelha",      	(int) BFD_RELOC_PPC_MORPHOS_DREL_HA),
     MAP ("tls",			(int) BFD_RELOC_PPC_TLS),
     MAP ("dtpmod",		(int) BFD_RELOC_PPC_DTPMOD),
     MAP ("dtprel",		(int) BFD_RELOC_PPC_DTPREL),
@@ -1665,7 +1673,7 @@ ppc_elf_cons (nbytes)
 	      if (target_big_endian)
 		offset = nbytes - size;
 	      fix_new_exp (frag_now, p - frag_now->fr_literal + offset, size,
-			   &exp, 0, reloc);
+			   &exp, 0, reloc, 0);
 	    }
 	}
       else
@@ -2620,7 +2628,7 @@ md_assemble (str)
 			      size,
 			      &fixups[i].exp,
 			      reloc_howto->pc_relative,
-			      fixups[i].reloc);
+			      fixups[i].reloc, 0);
 
 	  /* Turn off complaints that the addend is too large for things like
 	     foo+100000@ha.  */
@@ -2650,7 +2658,7 @@ md_assemble (str)
 		     &fixups[i].exp,
 		     (operand->flags & PPC_OPERAND_RELATIVE) != 0,
 		     ((bfd_reloc_code_real_type)
-		      (fixups[i].opindex + (int) BFD_RELOC_UNUSED)));
+		      (fixups[i].opindex + (int) BFD_RELOC_UNUSED)),0);
     }
 }
 
@@ -5625,6 +5633,10 @@ md_apply_fix3 (fixP, valP, seg)
 	case BFD_RELOC_PPC_EMB_RELST_HA:
 	case BFD_RELOC_PPC_EMB_RELSDA:
 	case BFD_RELOC_PPC_TOC16:
+	case BFD_RELOC_PPC_MORPHOS_DREL:
+	case BFD_RELOC_PPC_MORPHOS_DREL_LO:
+	case BFD_RELOC_PPC_MORPHOS_DREL_HI:
+	case BFD_RELOC_PPC_MORPHOS_DREL_HA:
 #ifdef OBJ_ELF
 	case BFD_RELOC_PPC64_TOC16_LO:
 	case BFD_RELOC_PPC64_TOC16_HI:

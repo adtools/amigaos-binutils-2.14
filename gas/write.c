@@ -160,7 +160,7 @@ static int n_fixups;
 static fixS *fix_new_internal PARAMS ((fragS *, int where, int size,
 				       symbolS *add, symbolS *sub,
 				       offsetT offset, int pcrel,
-				       RELOC_ENUM r_type));
+				       RELOC_ENUM r_type, int baserel));
 #if defined (BFD_ASSEMBLER) || (!defined (BFD) && !defined (OBJ_VMS))
 static long fixup_segment PARAMS ((fixS *, segT));
 #endif
@@ -190,7 +190,7 @@ static void relax_and_size_all_segments PARAMS ((void));
 
 static fixS *
 fix_new_internal (frag, where, size, add_symbol, sub_symbol, offset, pcrel,
-		  r_type)
+		  r_type, baserel)
      fragS *frag;		/* Which frag?  */
      int where;			/* Where in that frag?  */
      int size;			/* 1, 2, or 4 usually.  */
@@ -199,6 +199,7 @@ fix_new_internal (frag, where, size, add_symbol, sub_symbol, offset, pcrel,
      offsetT offset;		/* X_add_number.  */
      int pcrel;			/* TRUE if PC-relative relocation.  */
      RELOC_ENUM r_type ATTRIBUTE_UNUSED; /* Relocation type.  */
+     int baserel;               /* TRUE if base-relative data */
 {
   fixS *fixP;
 
@@ -239,6 +240,7 @@ fix_new_internal (frag, where, size, add_symbol, sub_symbol, offset, pcrel,
 #endif
 
 #ifdef TC_FIX_TYPE
+  fixP->tc_fix_data = baserel;
   TC_INIT_FIX_DATA (fixP);
 #endif
 
@@ -283,7 +285,7 @@ fix_new_internal (frag, where, size, add_symbol, sub_symbol, offset, pcrel,
 /* Create a fixup relative to a symbol (plus a constant).  */
 
 fixS *
-fix_new (frag, where, size, add_symbol, offset, pcrel, r_type)
+fix_new (frag, where, size, add_symbol, offset, pcrel, r_type, baserel)
      fragS *frag;		/* Which frag?  */
      int where;			/* Where in that frag?  */
      int size;			/* 1, 2, or 4 usually.  */
@@ -291,9 +293,10 @@ fix_new (frag, where, size, add_symbol, offset, pcrel, r_type)
      offsetT offset;		/* X_add_number.  */
      int pcrel;			/* TRUE if PC-relative relocation.  */
      RELOC_ENUM r_type;		/* Relocation type.  */
+     int baserel;               /* TRUE if base-relative data */
 {
   return fix_new_internal (frag, where, size, add_symbol,
-			   (symbolS *) NULL, offset, pcrel, r_type);
+			   (symbolS *) NULL, offset, pcrel, r_type, baserel);
 }
 
 /* Create a fixup for an expression.  Currently we only support fixups
@@ -301,13 +304,14 @@ fix_new (frag, where, size, add_symbol, offset, pcrel, r_type)
    file formats support anyhow.  */
 
 fixS *
-fix_new_exp (frag, where, size, exp, pcrel, r_type)
+fix_new_exp (frag, where, size, exp, pcrel, r_type, baserel)
      fragS *frag;		/* Which frag?  */
      int where;			/* Where in that frag?  */
      int size;			/* 1, 2, or 4 usually.  */
      expressionS *exp;		/* Expression.  */
      int pcrel;			/* TRUE if PC-relative relocation.  */
      RELOC_ENUM r_type;		/* Relocation type.  */
+     int baserel;               /* TRUE if base-relative data */
 {
   symbolS *add = NULL;
   symbolS *sub = NULL;
@@ -333,7 +337,7 @@ fix_new_exp (frag, where, size, exp, pcrel, r_type)
 	exp->X_add_symbol = stmp;
 	exp->X_add_number = 0;
 
-	return fix_new_exp (frag, where, size, exp, pcrel, r_type);
+	return fix_new_exp (frag, where, size, exp, pcrel, r_type, baserel);
       }
 
     case O_symbol_rva:
@@ -371,7 +375,7 @@ fix_new_exp (frag, where, size, exp, pcrel, r_type)
       break;
     }
 
-  return fix_new_internal (frag, where, size, add, sub, off, pcrel, r_type);
+  return fix_new_internal (frag, where, size, add, sub, off, pcrel, r_type, baserel);
 }
 
 /* Generic function to determine whether a fixup requires a relocation.  */
@@ -1666,17 +1670,17 @@ write_object_file ()
 #ifdef TC_CONS_FIX_NEW
 	  TC_CONS_FIX_NEW (lie->frag,
 			   lie->word_goes_here - lie->frag->fr_literal,
-			   2, &exp);
+			   2, &exp, 0);
 #else
 	  fix_new_exp (lie->frag,
 		       lie->word_goes_here - lie->frag->fr_literal,
-		       2, &exp, 0, BFD_RELOC_16);
+		       2, &exp, 0, BFD_RELOC_16, 0);
 #endif
 #else
 #if defined(TC_SPARC) || defined(TC_A29K) || defined(NEED_FX_R_TYPE)
 	  fix_new_exp (lie->frag,
 		       lie->word_goes_here - lie->frag->fr_literal,
-		       2, &exp, 0, NO_RELOC);
+		       2, &exp, 0, NO_RELOC, 0);
 #else
 #ifdef TC_NS32K
 	  fix_new_ns32k_exp (lie->frag,
@@ -1685,7 +1689,7 @@ write_object_file ()
 #else
 	  fix_new_exp (lie->frag,
 		       lie->word_goes_here - lie->frag->fr_literal,
-		       2, &exp, 0, 0);
+		       2, &exp, 0, 0, 0);
 #endif /* TC_NS32K  */
 #endif /* TC_SPARC|TC_A29K|NEED_FX_R_TYPE  */
 #endif /* BFD_ASSEMBLER  */
@@ -2564,6 +2568,11 @@ fixup_segment (fixP, this_segment)
 {
   long seg_reloc_count = 0;
   valueT add_number;
+  int size;
+  char *place;
+  long where;
+  int pcrel, plt;
+  char baserel = 0;
   fragS *fragP;
   segT add_symbol_segment = absolute_section;
 
@@ -2617,6 +2626,11 @@ fixup_segment (fixP, this_segment)
       TC_VALIDATE_FIX (fixP, this_segment, skip);
 #endif
       add_number = fixP->fx_offset;
+      pcrel = fixP->fx_pcrel;
+      plt = fixP->fx_plt;
+#ifdef TC_FIX_TYPE
+      baserel = fixP->tc_fix_data;
+#endif
 
       if (fixP->fx_addsy != NULL
 	  && symbol_mri_common_p (fixP->fx_addsy))
@@ -2752,6 +2766,11 @@ fixup_segment (fixP, this_segment)
 	  if (fixP->fx_subsy != NULL)
 	    symbol_mark_used_in_reloc (fixP->fx_subsy);
 	}
+
+#if !defined(BFD_ASSEMBLER) && !defined(MANY_SEGMENTS)
+      if (baserel && add_number)
+        add_number -= text_last_frag->fr_address;
+#endif
 
       if (!fixP->fx_bit_fixP && !fixP->fx_no_overflow && fixP->fx_size != 0)
 	{

@@ -156,7 +156,7 @@ smart_rename (from, to, preserve_dates)
 
   exists = lstat (to, &s) == 0;
 
-#if defined (_WIN32) && !defined (__CYGWIN32__)
+#if defined (_WIN32) && !defined (__CYGWIN32__) || defined (__amigaos4__)
   /* Win32, unlike unix, will not erase `to' in `rename(from, to)' but
      fail instead.  Also, chown is not present.  */
 

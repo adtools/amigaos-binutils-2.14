@@ -138,6 +138,7 @@ DESCRIPTION
 .enum bfd_flavour
 .{
 .  bfd_target_unknown_flavour,
+.  bfd_target_amiga_flavour,
 .  bfd_target_aout_flavour,
 .  bfd_target_coff_flavour,
 .  bfd_target_ecoff_flavour,
@@ -489,6 +490,8 @@ extern const bfd_target a29kcoff_big_vec;
 extern const bfd_target a_out_adobe_vec;
 extern const bfd_target aix5coff64_vec;
 extern const bfd_target aout0_big_vec;
+extern const bfd_target amiga_vec;
+extern const bfd_target aout_amiga_vec;
 extern const bfd_target aout_arm_big_vec;
 extern const bfd_target aout_arm_little_vec;
 extern const bfd_target aout_mips_big_vec;
@@ -509,6 +512,7 @@ extern const bfd_target b_out_vec_big_host;
 extern const bfd_target b_out_vec_little_host;
 extern const bfd_target bfd_efi_app_ia32_vec;
 extern const bfd_target bfd_efi_app_ia64_vec;
+extern const bfd_target bfd_elf32_amiga_vec;
 extern const bfd_target bfd_elf32_avr_vec;
 extern const bfd_target bfd_elf32_big_generic_vec;
 extern const bfd_target bfd_elf32_bigarc_vec;
@@ -527,6 +531,7 @@ extern const bfd_target bfd_elf32_hppa_vec;
 extern const bfd_target bfd_elf32_i370_vec;
 extern const bfd_target bfd_elf32_i386_freebsd_vec;
 extern const bfd_target bfd_elf32_i386_vec;
+extern const bfd_target bfd_elf32_i386be_amithlon_vec;
 extern const bfd_target bfd_elf32_i860_little_vec;
 extern const bfd_target bfd_elf32_i860_vec;
 extern const bfd_target bfd_elf32_i960_vec;
@@ -548,6 +553,7 @@ extern const bfd_target bfd_elf32_mcore_big_vec;
 extern const bfd_target bfd_elf32_mcore_little_vec;
 extern const bfd_target bfd_elf32_mn10200_vec;
 extern const bfd_target bfd_elf32_mn10300_vec;
+extern const bfd_target bfd_elf32_morphos_vec;
 extern const bfd_target bfd_elf32_msp430_vec;
 extern const bfd_target bfd_elf32_nbigmips_vec;
 extern const bfd_target bfd_elf32_nlittlemips_vec;
@@ -764,6 +770,8 @@ static const bfd_target * const _bfd_target_vector[] = {
 	&aix5coff64_vec,
 #endif
 	&aout0_big_vec,
+	&amiga_vec,
+	&aout_amiga_vec,
 #if 0
 	/* We have no way of distinguishing these from other a.out variants.  */
 	&aout_arm_big_vec,
@@ -788,6 +796,7 @@ static const bfd_target * const _bfd_target_vector[] = {
 	&armpei_little_vec,
 	&b_out_vec_big_host,
 	&b_out_vec_little_host,
+	&bfd_el32_amiga_vec,
 	&bfd_efi_app_ia32_vec,
 #ifdef BFD64
 	&bfd_efi_app_ia64_vec,
@@ -815,6 +824,7 @@ static const bfd_target * const _bfd_target_vector[] = {
 	&bfd_elf32_i370_vec,
 	&bfd_elf32_i386_freebsd_vec,
 	&bfd_elf32_i386_vec,
+	&bfd_elf32_i386be_amithlon_vec,
 	&bfd_elf32_i860_little_vec,
 	&bfd_elf32_i860_vec,
 	&bfd_elf32_i960_vec,
@@ -838,6 +848,7 @@ static const bfd_target * const _bfd_target_vector[] = {
 	&bfd_elf32_mcore_little_vec,
 	&bfd_elf32_mn10200_vec,
 	&bfd_elf32_mn10300_vec,
+	&bfd_elf32_morphos_vec,
 	&bfd_elf32_msp430_vec,
 #ifdef BFD64
 	&bfd_elf32_nbigmips_vec,

@@ -18,7 +18,7 @@ changequote([,])dnl
 bfd_version_string="\"${VERSION}\""
 if test x${is_release} = x; then
   bfd_version_date=`sed -n -e 's/.*DATE //p' < ${srcdir}/version.h`
-  bfd_version_string="\"${VERSION} ${bfd_version_date}\""
+  bfd_version_string="\"${VERSION} ${bfd_version_date} (Amiga, Inc. build 20031201)\""
 fi
 AC_SUBST(bfd_version)
 AC_SUBST(bfd_version_string)
@@ -544,8 +544,10 @@ do
     # use one entry per line, even though this leads to long lines.
     a29kcoff_big_vec)		tb="$tb coff-a29k.lo cofflink.lo" ;;
     a_out_adobe_vec)		tb="$tb aout-adobe.lo aout32.lo" ;;
+    amiga_vec)                  tb="$tb amigaos.lo amigaoslink.lo" ;;
     aix5coff64_vec)		tb="$tb coff64-rs6000.lo xcofflink.lo aix5ppc-core.lo"; target_size=64 ;;
     aout0_big_vec)		tb="$tb aout0.lo aout32.lo" ;;
+    aout_amiga_vec)		tb="$tb aout-amiga.lo aout32.lo";;
     aout_arm_big_vec)		tb="$tb aout-arm.lo aout32.lo" ;;
     aout_arm_little_vec)	tb="$tb aout-arm.lo aout32.lo" ;;
     aout_mips_big_vec)		tb="$tb mipsbsd.lo aout32.lo" ;;
@@ -566,6 +568,7 @@ do
     b_out_vec_little_host)	tb="$tb bout.lo aout32.lo" ;;
     bfd_efi_app_ia32_vec)	tb="$tb efi-app-ia32.lo peigen.lo cofflink.lo" ;;
     bfd_efi_app_ia64_vec)	tb="$tb efi-app-ia64.lo pepigen.lo cofflink.lo"; target_size=64 ;;
+    bfd_elf32_amiga_vec)	tb="$tb elf32-amiga.lo elf32.lo $elf" ;;
     bfd_elf32_avr_vec)		tb="$tb elf32-avr.lo elf32.lo $elf" ;;
     bfd_elf32_big_generic_vec) 	tb="$tb elf32-gen.lo elf32.lo $elf" ;;
     bfd_elf32_bigarc_vec)	tb="$tb elf32-arc.lo elf32.lo $elf" ;;
@@ -584,6 +587,7 @@ do
     bfd_elf32_i370_vec)		tb="$tb elf32-i370.lo elf32.lo $elf" ;;
     bfd_elf32_i386_freebsd_vec)	tb="$tb elf32-i386.lo elf32.lo $elf" ;;
     bfd_elf32_i386_vec)		tb="$tb elf32-i386.lo elf32.lo $elf" ;;
+    bfd_elf32_i386be_amithlon_vec) tb="$tb elf32-i386-amithlon.lo elf32.lo $elf" ;;
     bfd_elf32_i860_little_vec)	tb="$tb elf32-i860.lo elf32.lo $elf" ;;
     bfd_elf32_i860_vec)		tb="$tb elf32-i860.lo elf32.lo $elf" ;;
     bfd_elf32_i960_vec)		tb="$tb elf32-i960.lo elf32.lo $elf" ;;
@@ -605,6 +609,7 @@ do
     bfd_elf32_mcore_little_vec)	tb="$tb elf32-mcore.lo elf32.lo $elf" ;;
     bfd_elf32_mn10200_vec)	tb="$tb elf-m10200.lo elf32.lo $elf" ;;
     bfd_elf32_mn10300_vec)	tb="$tb elf-m10300.lo elf32.lo $elf" ;;
+    bfd_elf32_morphos_vec)      tb="$tb elf32-morphos.lo elf32.lo $elf";;
     bfd_elf32_msp430_vec)	tb="$tb elf32-msp430.lo elf32.lo $elf" ;;
     bfd_elf32_nbigmips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;
     bfd_elf32_nlittlemips_vec)	tb="$tb elfn32-mips.lo elfxx-mips.lo elf32.lo $elf ecofflink.lo"; target_size=64 ;;

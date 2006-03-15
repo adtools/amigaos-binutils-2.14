@@ -279,7 +279,7 @@ case $basic_machine in
 	# We use `pc' rather than `unknown'
 	# because (1) that's what they normally are, and
 	# (2) the word "unknown" tends to confuse beginning users.
-	i*86 | x86_64)
+	i*86 | i*86be | x86_64)
 	  basic_machine=$basic_machine-pc
 	  ;;
 	# Object if more than one company name word.
@@ -380,11 +380,8 @@ case $basic_machine in
 		basic_machine=580-amdahl
 		os=-sysv
 		;;
-	amiga | amiga-*)
-		basic_machine=m68k-unknown
-		;;
-	amigaos | amigados)
-		basic_machine=m68k-unknown
+	amigaos | amigados | amiga)
+		basic_machine=powerpc-unknown
 		os=-amigaos
 		;;
 	amigaunix | amix)
@@ -1116,7 +1113,7 @@ case $os in
 	      | -*vms* | -sco* | -esix* | -isc* | -aix* | -sunos | -sunos[34]*\
 	      | -hpux* | -unos* | -osf* | -luna* | -dgux* | -solaris* | -sym* \
 	      | -amigaos* | -amigados* | -msdos* | -newsos* | -unicos* | -aof* \
-	      | -aos* \
+	      | -aos* | -amithlon* \
 	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
 	      | -clix* | -riscos* | -uniplus* | -iris* | -rtu* | -xenix* \
 	      | -hiux* | -386bsd* | -netbsd* | -openbsd* | -freebsd* | -riscix* \
