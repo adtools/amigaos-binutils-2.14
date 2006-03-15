@@ -858,7 +858,7 @@ filter_symbols (abfd, obfd, osyms, isyms, symcount)
 
       if (strip_symbols == STRIP_ALL)
       {
-      	if (strcmp(name, "_start") == 0 || strcmp(name, "__amigaos4__") == 0)
+      	if (strcmp(name, "_start") == 0 || strcmp(name, "__amigaos4__") == 0 || strcmp(name, "_SDA_BASE_") == 0)
 	  keep = 1;
 	else
 	keep = 0;
@@ -2205,6 +2205,7 @@ strip_main (argc, argv)
 
   add_specific_symbol("__amigaos4__", &keep_specific_list);
   add_specific_symbol("_start", &keep_specific_list);
+  add_specific_symbol("_SDA_BASE_", &keep_specific_list);
 
   /* Default is to strip all unnecessary symbols.  */
   if (strip_symbols == STRIP_UNDEF

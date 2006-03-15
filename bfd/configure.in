@@ -18,7 +18,7 @@ changequote([,])dnl
 bfd_version_string="\"${VERSION}\""
 if test x${is_release} = x; then
   bfd_version_date=`sed -n -e 's/.*DATE //p' < ${srcdir}/version.h`
-  bfd_version_string="\"${VERSION} ${bfd_version_date} (Amiga, Inc. build 20031201)\""
+  bfd_version_string="\"${VERSION} ${bfd_version_date} (Amiga OS build 20041204)\""
 fi
 AC_SUBST(bfd_version)
 AC_SUBST(bfd_version_string)
@@ -568,7 +568,7 @@ do
     b_out_vec_little_host)	tb="$tb bout.lo aout32.lo" ;;
     bfd_efi_app_ia32_vec)	tb="$tb efi-app-ia32.lo peigen.lo cofflink.lo" ;;
     bfd_efi_app_ia64_vec)	tb="$tb efi-app-ia64.lo pepigen.lo cofflink.lo"; target_size=64 ;;
-    bfd_elf32_amiga_vec)	tb="$tb elf32-amiga.lo elf32.lo $elf" ;;
+    bfd_elf32_amigaos_vec)	tb="$tb elf32-amigaos.lo elf32.lo $elf" ;;
     bfd_elf32_avr_vec)		tb="$tb elf32-avr.lo elf32.lo $elf" ;;
     bfd_elf32_big_generic_vec) 	tb="$tb elf32-gen.lo elf32.lo $elf" ;;
     bfd_elf32_bigarc_vec)	tb="$tb elf32-arc.lo elf32.lo $elf" ;;

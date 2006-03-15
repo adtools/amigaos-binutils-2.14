@@ -2553,7 +2553,13 @@ to compensate for the borrow when the low bits are added.  */
   BFD_RELOC_PPC64_DTPREL16_HIGHERA,
   BFD_RELOC_PPC64_DTPREL16_HIGHEST,
   BFD_RELOC_PPC64_DTPREL16_HIGHESTA,
-
+  
+/* AmigaOS4 specific relocations */
+  BFD_RELOC_PPC_AMIGAOS_BREL,
+  BFD_RELOC_PPC_AMIGAOS_BREL_LO,
+  BFD_RELOC_PPC_AMIGAOS_BREL_HI,
+  BFD_RELOC_PPC_AMIGAOS_BREL_HA,
+  
 /* IBM 370/390 relocations  */
   BFD_RELOC_I370_D12,
 
@@ -3479,7 +3485,8 @@ assembler-expanded instructions.  This is commonly used
 internally by the linker after analysis of a 
 BFD_RELOC_XTENSA_ASM_EXPAND.  */
   BFD_RELOC_XTENSA_ASM_SIMPLIFY,
-  BFD_RELOC_UNUSED };
+  BFD_RELOC_UNUSED};
+  
 typedef enum bfd_reloc_code_real bfd_reloc_code_real_type;
 reloc_howto_type *
 bfd_reloc_type_lookup PARAMS ((bfd *abfd, bfd_reloc_code_real_type code));

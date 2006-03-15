@@ -113,6 +113,7 @@ ALL_EMULATIONS = \
 	eaixrs6.o \
 	eamiga.o \
 	eamiga_bss.o \
+	eamigaos.o \
 	eamithlon.o \
 	ealpha.o \
 	earcelf.o \
@@ -445,6 +446,9 @@ eamiga.c: $(srcdir)/emulparams/amiga.sh\
 eamiga_bss.c: $(srcdir)/emulparams/amiga_bss.sh\
    $(srcdir)/emultempl/amiga.em $(srcdir)/scripttempl/amiga_bss.sc ${GEN_DEPENDS}
 	${GENSCRIPTS} amiga_bss "$(tdir_amiga_bss)"
+eamigaos.c: $(srcdir)/emulparams/amigaos.sh \
+  $(srcdir)/emultempl/amigaos.em $(srcdir)/scripttempl/amigaos.sc ${GEN_DEPENDS}
+	${GENSCRIPTS} amigaos "$(tdir_amigaos)"
 eamithlon.c: $(srcdir)/emulparams/amithlon.sh \
   $(srcdir)/emultempl/amithlon.em $(srcdir)/scripttempl/amithlon.sc ${GEN_DEPENDS}
 	${GENSCRIPTS} amithlon "$(tdir_amithlon)"

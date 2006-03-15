@@ -458,7 +458,7 @@ or32-*-rtems)           targ_emul=or32 ;;
 pdp11-*-*)		targ_emul=pdp11 ;;
 pjl*-*-*)	        targ_emul=pjlelf ; targ_extra_emuls="elf_i386" ;;
 pj*-*-*)	        targ_emul=pjelf ;;
-powerpc-*-amigaos*)	targ_emul=elf32ppc ;;
+powerpc-*-amigaos*)	targ_emul=amigaos; targ_extra_emuls=elf32ppc ;;
 powerpc-*-amigaoshunk*)	targ_emul=ppcamiga ; targ_extra_emuls=ppcamiga_bss;;
 powerpc-*-morphos*)	targ_emul=morphos ; targ_extra_emuls=morphos_baserel;;
 powerpc-*-freebsd*)	targ_emul=elf32ppc_fbsd;

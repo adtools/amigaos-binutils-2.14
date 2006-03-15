@@ -214,7 +214,7 @@ BFD32_BACKENDS = \
 	elf32-arc.lo \
 	elfarm-oabi.lo \
 	elfarm-nabi.lo \
-	elf32-amiga.lo \
+	elf32-amigaos.lo \
 	elf32-avr.lo \
 	elf32-cris.lo \
 	elf32-d10v.lo \
@@ -383,7 +383,7 @@ BFD32_BACKENDS_CFILES = \
 	elf32-arc.c \
 	elfarm-oabi.c \
 	elfarm-nabi.c \
-	elf32-amiga.c \
+	elf32-amigaos.c \
 	elf32-avr.c \
 	elf32-cris.c \
 	elf32-d10v.c \
@@ -1135,7 +1135,7 @@ efi-app-ia32.lo: efi-app-ia32.c $(INCDIR)/filenames.h \
 elf.lo: elf.c $(INCDIR)/filenames.h $(INCDIR)/bfdlink.h \
   elf-bfd.h $(INCDIR)/elf/common.h $(INCDIR)/elf/internal.h \
   $(INCDIR)/elf/external.h $(INCDIR)/libiberty.h
-elf32-amiga.lo: elf32-amiga.c $(INCDIR)/filenames.h $(INCDIR)/bfdlink.h \
+elf32-amigaos.lo: elf32-amigaos.c $(INCDIR)/filenames.h $(INCDIR)/bfdlink.h \
   elf-bfd.h $(INCDIR)/elf/common.h $(INCDIR)/elf/internal.h \
   $(INCDIR)/elf/external.h $(INCDIR)/elf/ppc.h $(INCDIR)/elf/reloc-macros.h \
   elf32-target.h

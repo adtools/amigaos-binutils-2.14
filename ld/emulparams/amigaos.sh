@@ -1,0 +1,6 @@
+TEMPLATE_NAME=amigaos
+SCRIPT_NAME=amigaos
+OUTPUT_FORMAT="elf32-amigaos"
+MAXPAGESIZE=0x10000
+ARCH=powerpc
+MACHINE=

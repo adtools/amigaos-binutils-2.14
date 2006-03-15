@@ -1035,6 +1035,10 @@ static const char *const bfd_reloc_code_real_names[] = { "@@uninitialized@@",
   "BFD_RELOC_PPC64_DTPREL16_HIGHERA",
   "BFD_RELOC_PPC64_DTPREL16_HIGHEST",
   "BFD_RELOC_PPC64_DTPREL16_HIGHESTA",
+  "BFD_RELOC_PPC_AMIGAOS_BREL",
+  "BFD_RELOC_PPC_AMIGAOS_BREL_LO",
+  "BFD_RELOC_PPC_AMIGAOS_BREL_HI",
+  "BFD_RELOC_PPC_AMIGAOS_BREL_HA",
   "BFD_RELOC_I370_D12",
   "BFD_RELOC_CTOR",
   "BFD_RELOC_ARM_PCREL_BRANCH",
@@ -1489,6 +1493,7 @@ static const char *const bfd_reloc_code_real_names[] = { "@@uninitialized@@",
   "BFD_RELOC_XTENSA_OP2",
   "BFD_RELOC_XTENSA_ASM_EXPAND",
   "BFD_RELOC_XTENSA_ASM_SIMPLIFY",
+
  "@@overflow: BFD_RELOC_UNUSED@@",
 };
 #endif

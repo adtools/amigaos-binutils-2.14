@@ -512,7 +512,7 @@ extern const bfd_target b_out_vec_big_host;
 extern const bfd_target b_out_vec_little_host;
 extern const bfd_target bfd_efi_app_ia32_vec;
 extern const bfd_target bfd_efi_app_ia64_vec;
-extern const bfd_target bfd_elf32_amiga_vec;
+extern const bfd_target bfd_elf32_amigaos_vec;
 extern const bfd_target bfd_elf32_avr_vec;
 extern const bfd_target bfd_elf32_big_generic_vec;
 extern const bfd_target bfd_elf32_bigarc_vec;
@@ -796,11 +796,11 @@ static const bfd_target * const _bfd_target_vector[] = {
 	&armpei_little_vec,
 	&b_out_vec_big_host,
 	&b_out_vec_little_host,
-	&bfd_el32_amiga_vec,
 	&bfd_efi_app_ia32_vec,
 #ifdef BFD64
 	&bfd_efi_app_ia64_vec,
 #endif
+	&bfd_elf32_amigaos_vec,
 	&bfd_elf32_avr_vec,
 
 	/* This, and other vectors, may not be used in any *.mt configuration.

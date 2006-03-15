@@ -1183,6 +1183,8 @@ ppc_target_format ()
 #ifdef OBJ_ELF
 #ifdef TE_MORPHOS
   return "elf32-morphos";
+#elif TE_AMIGAOS
+  return "elf32-amigaos";
 #else
   return (target_big_endian
 	  ? (ppc_obj64 ? "elf64-powerpc" : "elf32-powerpc")
@@ -1536,6 +1538,13 @@ ppc_elf_suffix (str_p, exp_p)
     MAP ("got@tprel@l",		(int) BFD_RELOC_PPC_GOT_TPREL16_LO),
     MAP ("got@tprel@h",		(int) BFD_RELOC_PPC_GOT_TPREL16_HI),
     MAP ("got@tprel@ha",	(int) BFD_RELOC_PPC_GOT_TPREL16_HA),
+
+    /* AmigaOS4 specific relocs */
+    MAP ("brel",		(int) BFD_RELOC_PPC_AMIGAOS_BREL),
+    MAP ("brel@l",		(int) BFD_RELOC_PPC_AMIGAOS_BREL_LO),
+    MAP ("brel@h",		(int) BFD_RELOC_PPC_AMIGAOS_BREL_HI),
+    MAP ("brel@ha",		(int) BFD_RELOC_PPC_AMIGAOS_BREL_HA),
+
     /* The following are only valid for ppc64.  Negative values are
        used instead of a flag.  */
     MAP ("higher",		- (int) BFD_RELOC_PPC64_HIGHER),
@@ -1555,6 +1564,7 @@ ppc_elf_suffix (str_p, exp_p)
     MAP ("tprel@highera",	- (int) BFD_RELOC_PPC64_TPREL16_HIGHERA),
     MAP ("tprel@highest",	- (int) BFD_RELOC_PPC64_TPREL16_HIGHEST),
     MAP ("tprel@highesta",	- (int) BFD_RELOC_PPC64_TPREL16_HIGHESTA),
+    
     { (char *) 0, 0,		(int) BFD_RELOC_UNUSED }
   };
 
@@ -5676,6 +5686,13 @@ md_apply_fix3 (fixP, valP, seg)
 			      PPC_HA (value), 2);
 	  break;
 
+  	case BFD_RELOC_PPC_AMIGAOS_BREL:
+	case BFD_RELOC_PPC_AMIGAOS_BREL_HI:
+	case BFD_RELOC_PPC_AMIGAOS_BREL_LO:
+	case BFD_RELOC_PPC_AMIGAOS_BREL_HA:
+	  md_number_to_chars (fixP->fx_frag->fr_literal + fixP->fx_where,
+			      value, 2);
+	  break;
 #ifdef OBJ_ELF
 	case BFD_RELOC_PPC64_HIGHER:
 	  if (fixP->fx_pcrel)
