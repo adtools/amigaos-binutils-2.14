@@ -302,12 +302,7 @@ cat <<EOF
   ${RELOCATING+${CREATE_SHLIB-PROVIDE (__fini_array_start = .);}}
   .fini_array   ${RELOCATING-0} : { *(.fini_array) }
   ${RELOCATING+${CREATE_SHLIB-PROVIDE (__fini_array_end = .);}}
-  .dstart         :
-  {
-    LONG(0);
-    ${RELOCATING+PROVIDE (__data_start = .);}
-  }
-  ${RELOCATING+. = ALIGN(${ALIGNMENT});}
+
   .data         ${RELOCATING-0} :
   {
     ${RELOCATING+PROVIDE (_DATA_BASE_ = .);}
@@ -348,12 +343,6 @@ cat <<EOF
    /* Align here to ensure that the .bss section occupies space up to
       _end.  Align after .bss to ensure correct alignment even if the
       .bss section disappears because there are no input sections.  */
-   ${RELOCATING+. = ALIGN(${ALIGNMENT});}
-  }
-   .dend		  :
-  {
-    *(.dend)
-    ${RELOCATING+PROVIDE (__data_end = .);}
    ${RELOCATING+. = ALIGN(${ALIGNMENT});}
   }
   ${OTHER_BSS_SECTIONS}

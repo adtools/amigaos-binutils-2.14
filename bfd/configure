@@ -2831,7 +2831,7 @@ bfd_version=`echo "${VERSION}" | sed -e 's/\([^\.]*\)\.*\([^\.]*\)\.*\([^\.]*\)\
 bfd_version_string="\"${VERSION}\""
 if test x${is_release} = x; then
   bfd_version_date=`sed -n -e 's/.*DATE //p' < ${srcdir}/version.h`
-  bfd_version_string="\"${VERSION} ${bfd_version_date} (Amiga OS build 20041204)\""
+  bfd_version_string="\"${VERSION} ${bfd_version_date} (Amiga OS build 20050713)\""
 fi
 
 

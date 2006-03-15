@@ -5301,7 +5301,7 @@ ppc_elf_relocate_section (output_bfd, info, input_bfd, input_section,
 	    addend = addend - data_section->vma;
 		       
 	    if (r_type == R_PPC_AMIGAOS_BREL_HA)
-	      addend -= ((relocation + addend) & 0x8000) << 1;
+	      addend += ((relocation + addend) & 0x8000) << 1;
 
 	  }
 	  break;
