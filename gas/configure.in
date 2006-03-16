@@ -328,8 +328,8 @@ changequote([,])dnl
       m68hc11-*-* | m6811-*-*)		fmt=elf ;;
       m68hc12-*-* | m6812-*-*)		fmt=elf ;;
 
-      m68*-*-amigaoshunk)   		fmt=amigahunk em=amiga bfd_gas=yes ;;
-      m68*-*-amigaos*)      		fmt=aout em=amiga ;;
+      m68k-*-amigaoshunk)		fmt=amigahunk em=amiga bfd_gas=yes ;;
+      m68k-*-amigaos*)			fmt=aout em=amiga ;;
       m68k-*-vxworks*)			fmt=aout em=sun3 ;;
       m68k-ericsson-ose)		fmt=aout em=sun3 ;;
       m68k-*-sunos*)			fmt=aout em=sun3 ;;
@@ -959,7 +959,7 @@ AC_PROG_CC
 AC_MSG_CHECKING(for host dependent CFLAGS)
 other_host_cflags=""
 case "${host}" in
-	m68*-*-amigaos*)	other_host_cflags="-mstackextend" ;;
+	m68k-*-amigaos*)	other_host_cflags="-mstackextend" ;;
 esac
 test -n "$other_host_cflags" && CFLAGS="$CFLAGS $other_host_cflags"
 AC_MSG_RESULT($other_host_cflags)

@@ -979,12 +979,14 @@ cpu-w65.lo: cpu-w65.c $(INCDIR)/filenames.h
 cpu-xstormy16.lo: cpu-xstormy16.c $(INCDIR)/filenames.h
 cpu-xtensa.lo: cpu-xtensa.c $(INCDIR)/filenames.h
 cpu-z8k.lo: cpu-z8k.c $(INCDIR)/filenames.h
-amigaos.lo: amigaos.c libamiga.h bfd.h
-amigaoslink.lo: bfd.h libamiga.h amigaoslink.c
-aout-amiga.lo: aout-amiga.c aoutf1.h bfd.h
+amigaos.lo: amigaos.c libamiga.h
+amigaoslink.lo: amigaoslink.c $(INCDIR)/bfdlink.h genlink.h libamiga.h
 aout-adobe.lo: aout-adobe.c $(INCDIR)/filenames.h $(INCDIR)/aout/adobe.h \
   $(INCDIR)/aout/stab_gnu.h $(INCDIR)/aout/stab.def libaout.h \
   $(INCDIR)/bfdlink.h
+aout-amiga.lo: aout-amiga.c libaout.h $(INCDIR)/bfdlink.h \
+  $(INCDIR)/aout/aout64.h $(INCDIR)/aout/stab_gnu.h \
+  $(INCDIR)/aout/stab.def $(INCDIR)/aout/ar.h aout-target.h 
 aout-arm.lo: aout-arm.c $(INCDIR)/filenames.h libaout.h \
   $(INCDIR)/bfdlink.h $(INCDIR)/aout/aout64.h aoutx.h \
   $(INCDIR)/safe-ctype.h $(INCDIR)/aout/stab_gnu.h $(INCDIR)/aout/stab.def \

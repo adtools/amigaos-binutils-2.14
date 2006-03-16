@@ -33,8 +33,8 @@ SECTIONS
   {
     *(.bss)
     *(COMMON)
-    ${RELOCATING+__edata  =  .;}
-    ${RELOCATING+__bss_start  =  .;}
+    ${RELOCATING+__edata = .;}
+    ${RELOCATING+__bss_start = .;}
     ${RELOCATING+__end = ALIGN(4) };
   }
 }

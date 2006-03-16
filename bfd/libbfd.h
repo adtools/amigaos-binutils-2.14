@@ -1493,7 +1493,6 @@ static const char *const bfd_reloc_code_real_names[] = { "@@uninitialized@@",
   "BFD_RELOC_XTENSA_OP2",
   "BFD_RELOC_XTENSA_ASM_EXPAND",
   "BFD_RELOC_XTENSA_ASM_SIMPLIFY",
-
  "@@overflow: BFD_RELOC_UNUSED@@",
 };
 #endif

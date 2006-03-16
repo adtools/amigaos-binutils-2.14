@@ -88,7 +88,7 @@ char *myname;
 #ifdef BFD_ASSEMBLER
 segT reg_section, expr_section;
 segT text_section, data_section, bss_section;
-#ifdef TE_AMIGA
+#ifdef OBJ_AMIGAHUNK
 segT data_chip_section, bss_chip_section;
 #endif
 #endif
@@ -1047,7 +1047,7 @@ perform_an_assembly_pass (argc, argv)
   text_section = subseg_new (TEXT_SECTION_NAME, 0);
   data_section = subseg_new (DATA_SECTION_NAME, 0);
   bss_section = subseg_new (BSS_SECTION_NAME, 0);
-#ifdef TE_AMIGA
+#ifdef OBJ_AMIGAHUNK
   data_chip_section = subseg_new (".data_chip", 0);
   bss_chip_section = subseg_new (".bss_chip", 0);
 #endif
@@ -1061,7 +1061,7 @@ perform_an_assembly_pass (argc, argv)
 			 applicable & (SEC_ALLOC | SEC_LOAD | SEC_RELOC
 				       | SEC_DATA));
   bfd_set_section_flags (stdoutput, bss_section, applicable & SEC_ALLOC);
-#ifdef TE_AMIGA
+#ifdef OBJ_AMIGAHUNK
   bfd_set_section_flags (stdoutput, data_chip_section,
 			 applicable & (SEC_ALLOC | SEC_LOAD | SEC_RELOC));
   bfd_set_section_flags (stdoutput, bss_chip_section, applicable & SEC_ALLOC);

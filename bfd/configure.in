@@ -544,8 +544,8 @@ do
     # use one entry per line, even though this leads to long lines.
     a29kcoff_big_vec)		tb="$tb coff-a29k.lo cofflink.lo" ;;
     a_out_adobe_vec)		tb="$tb aout-adobe.lo aout32.lo" ;;
-    amiga_vec)                  tb="$tb amigaos.lo amigaoslink.lo" ;;
     aix5coff64_vec)		tb="$tb coff64-rs6000.lo xcofflink.lo aix5ppc-core.lo"; target_size=64 ;;
+    amiga_vec)			tb="$tb amigaos.lo amigaoslink.lo" ;;
     aout0_big_vec)		tb="$tb aout0.lo aout32.lo" ;;
     aout_amiga_vec)		tb="$tb aout-amiga.lo aout32.lo";;
     aout_arm_big_vec)		tb="$tb aout-arm.lo aout32.lo" ;;

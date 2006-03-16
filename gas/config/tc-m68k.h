@@ -81,10 +81,16 @@ struct fix;
 #define TC_COFF_FIX2RTYPE(FIX) tc_coff_fix2rtype(FIX)
 #define TC_COFF_SIZEMACHDEP(frag) tc_coff_sizemachdep(frag)
 extern int tc_coff_sizemachdep PARAMS ((struct frag *));
+#ifdef TE_SUN3
 /* This variable contains the value to write out at the beginning of
+   the a.out file.  The 2<<16 means that this is a 68020 file instead
    of an old-style 68000 file */
 
+#define DEFAULT_MAGIC_NUMBER_FOR_OBJECT_FILE (2<<16|OMAGIC);	/* Magic byte for file header */
+#endif /* TE_SUN3 */
+#ifdef TE_AMIGA
 #define DEFAULT_MAGIC_NUMBER_FOR_OBJECT_FILE (OMAGIC);	/* Magic byte for file header */
+#endif
 
 #ifndef AOUT_MACHTYPE
 #define AOUT_MACHTYPE m68k_aout_machtype

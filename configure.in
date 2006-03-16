@@ -981,6 +981,9 @@ tentative_cc=""
 host_makefile_frag=/dev/null
 if test -d ${srcdir}/config ; then
 case "${host}" in
+  m68k-*-amigaos*)
+    host_makefile_frag="config/mh-amigaos"
+    ;;
   m68k-hp-hpux*)
     # Avoid "too much defining" errors from HPUX compiler.
     tentative_cc="cc -Wp,-H256000"
@@ -1085,12 +1088,6 @@ case "${host}" in
   i[[3456]]86-*-msdosdjgpp*)
     host_makefile_frag="config/mh-djgpp"
     ;;
-  *-*-amigaos*)
-    host_makefile_frag="${host_makefile_frag} config/mh-amigaos"
-    ;;
-  *-*-morphos*)
-    host_makefile_frag="${host_makefile_frag} config/mh-morphos"
-    ;;
   *-cygwin*)
     host_makefile_frag="config/mh-cygwin"
     ;;
@@ -1099,6 +1096,9 @@ case "${host}" in
     ;;
   *-interix*)
     host_makefile_frag="config/mh-interix"
+    ;;
+  *-morphos*)
+    host_makefile_frag="config/mh-morphos"
     ;;
   vax-*-ultrix2*)
     # The old BSD pcc isn't up to compiling parts of gdb so use gcc

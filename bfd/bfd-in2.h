@@ -3485,8 +3485,7 @@ assembler-expanded instructions.  This is commonly used
 internally by the linker after analysis of a 
 BFD_RELOC_XTENSA_ASM_EXPAND.  */
   BFD_RELOC_XTENSA_ASM_SIMPLIFY,
-  BFD_RELOC_UNUSED};
-  
+  BFD_RELOC_UNUSED };
 typedef enum bfd_reloc_code_real bfd_reloc_code_real_type;
 reloc_howto_type *
 bfd_reloc_type_lookup PARAMS ((bfd *abfd, bfd_reloc_code_real_type code));
@@ -3817,12 +3816,12 @@ struct bfd
       struct cisco_core_struct *cisco_core_data;
       struct versados_data_struct *versados_data;
       struct netbsd_core_struct *netbsd_core_data;
-      struct amiga_data_struct *amiga_data;
       struct mach_o_data_struct *mach_o_data;
       struct mach_o_fat_data_struct *mach_o_fat_data;
       struct bfd_pef_data_struct *pef_data;
       struct bfd_pef_xlib_data_struct *pef_xlib_data;
       struct bfd_sym_data_struct *sym_data;
+      struct amiga_data_struct *amiga_data;
       PTR any;
     }
   tdata;

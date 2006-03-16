@@ -199,7 +199,7 @@ fix_new_internal (frag, where, size, add_symbol, sub_symbol, offset, pcrel,
      offsetT offset;		/* X_add_number.  */
      int pcrel;			/* TRUE if PC-relative relocation.  */
      RELOC_ENUM r_type ATTRIBUTE_UNUSED; /* Relocation type.  */
-     int baserel;               /* TRUE if base-relative data */
+     int baserel ATTRIBUTE_UNUSED; /* TRUE if base-relative data */
 {
   fixS *fixP;
 
@@ -293,7 +293,7 @@ fix_new (frag, where, size, add_symbol, offset, pcrel, r_type, baserel)
      offsetT offset;		/* X_add_number.  */
      int pcrel;			/* TRUE if PC-relative relocation.  */
      RELOC_ENUM r_type;		/* Relocation type.  */
-     int baserel;               /* TRUE if base-relative data */
+     int baserel;		/* TRUE if base-relative data */
 {
   return fix_new_internal (frag, where, size, add_symbol,
 			   (symbolS *) NULL, offset, pcrel, r_type, baserel);
@@ -311,7 +311,7 @@ fix_new_exp (frag, where, size, exp, pcrel, r_type, baserel)
      expressionS *exp;		/* Expression.  */
      int pcrel;			/* TRUE if PC-relative relocation.  */
      RELOC_ENUM r_type;		/* Relocation type.  */
-     int baserel;               /* TRUE if base-relative data */
+     int baserel;		/* TRUE if base-relative data */
 {
   symbolS *add = NULL;
   symbolS *sub = NULL;
@@ -2568,11 +2568,6 @@ fixup_segment (fixP, this_segment)
 {
   long seg_reloc_count = 0;
   valueT add_number;
-  int size;
-  char *place;
-  long where;
-  int pcrel, plt;
-  char baserel = 0;
   fragS *fragP;
   segT add_symbol_segment = absolute_section;
 
@@ -2626,11 +2621,6 @@ fixup_segment (fixP, this_segment)
       TC_VALIDATE_FIX (fixP, this_segment, skip);
 #endif
       add_number = fixP->fx_offset;
-      pcrel = fixP->fx_pcrel;
-      plt = fixP->fx_plt;
-#ifdef TC_FIX_TYPE
-      baserel = fixP->tc_fix_data;
-#endif
 
       if (fixP->fx_addsy != NULL
 	  && symbol_mri_common_p (fixP->fx_addsy))
@@ -2768,7 +2758,7 @@ fixup_segment (fixP, this_segment)
 	}
 
 #if !defined(BFD_ASSEMBLER) && !defined(MANY_SEGMENTS)
-      if (baserel && add_number)
+      if (fixP->tc_fix_data && add_number)
         add_number -= text_last_frag->fr_address;
 #endif
 

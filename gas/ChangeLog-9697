@@ -373,17 +373,6 @@ Tue Oct 21 10:20:11 1997  Doug Evans  <devans@canuck.cygnus.com>
 	* config/tc-sparc.c (md_apply_fix3, cases ..._H44, ..._HIX22): Leave
 	overflow signalling to linker.
 
-Mon Oct 20 21:42:55 1997  Fred Fish  <fnf@ninemoons.com>
-
-	* config/tc-sh.c (insert): Add extra 0 arg for fix_new_exp call.
-	(md_assemble): Add extra 0 arg for fix_new call.
-	(sh_frob_label): Add extra 0 arg for fix_new call.
-	(sh_flush_pending_output): Add extra 0 arg for fix_new call.
-	(s_uses): Add extra 0 arg for fix_new_exp call.
-	(sh_frob_section): Add extra 0 arg for fix_new call.
-	(md_convert_frag): Add extra 0 arg for fix_new calls.
-	(sh_handle_align): Add extra 0 arg for fix_new call.
-
 Mon Oct 20 14:54:06 1997  Klaus K"ampf  <kkaempf@progis.de>
 
 	* makefile.vms: Fix for dec c.
@@ -537,12 +526,6 @@ Wed Oct  8 12:33:32 1997  Richard Henderson  <rth@cygnus.com>
 	* configure.in: Change alpha-*-* to alpha*-*-*; config.guess now
 	recognizes alphaev5 etc.
 	* configure: Rebuild.
-
-Wed Oct  8 10:40:55 1997  Fred Fish  <fnf@ninemoons.com>
-
-	* config/tc-i386.c (md_assemble): Add extra 0 arg for fix_new_exp calls.
-	(md_create_long_jump): Add extra 0 arg for fix_new calls.
-	(md_estimate_size_before_relax): Ditto.
 
 Wed Oct  8 00:04:05 1997  Gavin Koch  <gavin@cygnus.com>
 

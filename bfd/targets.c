@@ -489,9 +489,9 @@ to find an alternative output format that is suitable.
 extern const bfd_target a29kcoff_big_vec;
 extern const bfd_target a_out_adobe_vec;
 extern const bfd_target aix5coff64_vec;
-extern const bfd_target aout0_big_vec;
 extern const bfd_target amiga_vec;
 extern const bfd_target aout_amiga_vec;
+extern const bfd_target aout0_big_vec;
 extern const bfd_target aout_arm_big_vec;
 extern const bfd_target aout_arm_little_vec;
 extern const bfd_target aout_mips_big_vec;
@@ -769,9 +769,9 @@ static const bfd_target * const _bfd_target_vector[] = {
 #ifdef BFD64
 	&aix5coff64_vec,
 #endif
-	&aout0_big_vec,
 	&amiga_vec,
 	&aout_amiga_vec,
+	&aout0_big_vec,
 #if 0
 	/* We have no way of distinguishing these from other a.out variants.  */
 	&aout_arm_big_vec,

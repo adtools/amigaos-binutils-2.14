@@ -28,22 +28,27 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "bfd.h"
 #include "sysdep.h"
 #include "bfdlink.h"
-
 #include "getopt.h"
+
 #include "ld.h"
-#include "config.h"
 #include "ldmain.h"
-#include "ldemul.h"
-#include "ldfile.h"
 #include "ldmisc.h"
 #include "ldexp.h"
 #include "ldlang.h"
+#include "ldfile.h"
+#include "ldemul.h"
+#include "ldctor.h"
 
-#if defined(TARGET_IS_amiga) || defined (TARGET_IS_ppcamiga)
 #include "libamiga.h"
-#else
-extern int amiga_base_relative; /* defined in amigaoslink.c */
-#endif
+
+/* shared functions */
+void amiga_add_options PARAMS ((int, char **, int, struct option **, int, struct option **));
+bfd_boolean amiga_handle_option PARAMS ((int));
+void amiga_after_parse PARAMS ((void));
+void amiga_after_open PARAMS ((void));
+void amiga_after_allocation PARAMS ((void));
+
+/* amigaoslink.c variables */
 
 /* 1 means, write out debug hunk, when producing a load file */
 extern int write_debug_hunk;
@@ -51,80 +56,76 @@ extern int write_debug_hunk;
 /* This is the attribute to use for the next file */
 extern int amiga_attribute;
 
+/* generate a combined data+bss hunk */
+extern int amiga_base_relative;
+
 /* generate a resident executable */
 extern int amiga_resident;
 
-/* generate a pOS executable */
-extern int amiga_pOS_flg;
-
 static void gld${EMULATION_NAME}_before_parse PARAMS ((void));
 static char *gld${EMULATION_NAME}_get_script PARAMS ((int *isfile));
-static int gld${EMULATION_NAME}_parse_args PARAMS ((int, char **));
+
+#if defined(TARGET_IS_amiga)
 
 /* Handle amiga specific options */
-static int
-gld${EMULATION_NAME}_parse_args (argc, argv)
-     int argc;
-     char **argv;
+
+enum {
+  OPTION_IGNORE = 300,
+  OPTION_AMIGA_CHIP,
+  OPTION_AMIGA_FAST,
+  OPTION_AMIGA_ATTRIBUTE,
+  OPTION_AMIGA_DEBUG,
+  OPTION_AMIGA_DATABSS_TOGETHER,
+  OPTION_AMIGA_DATADATA_RELOC,
+  OPTION_FLAVOR
+};
+
+void
+amiga_add_options (ns, shortopts, nl, longopts, nrl, really_longopts)
+     int ns ATTRIBUTE_UNUSED;
+     char **shortopts ATTRIBUTE_UNUSED;
+     int nl;
+     struct option **longopts;
+     int nrl ATTRIBUTE_UNUSED;
+     struct option **really_longopts ATTRIBUTE_UNUSED;
 {
-  int prevoptind = optind;
-  int prevopterr = opterr;
-  int indx;
-  int longind;
-  int optc;
-  long val;
-  char *end;
-
-#define OPTION_IGNORE (300)
-#define OPTION_AMIGA_CHIP               (OPTION_IGNORE + 1)
-#define OPTION_AMIGA_FAST               (OPTION_AMIGA_CHIP + 1)
-#define OPTION_AMIGA_ATTRIBUTE          (OPTION_AMIGA_FAST + 1)
-#define OPTION_AMIGA_DEBUG              (OPTION_AMIGA_ATTRIBUTE + 1)
-#define OPTION_AMIGA_DATADATA_RELOC     (OPTION_AMIGA_DEBUG + 1)
-#define OPTION_FLAVOR			(OPTION_AMIGA_DATADATA_RELOC + 1)
-#define OPTION_AMIGA_POS		(OPTION_FLAVOR + 1)
-
-  static struct option longopts[] = {
-    {"amiga-datadata-reloc", no_argument, NULL, OPTION_AMIGA_DATADATA_RELOC},
-    /*    '\0', NULL, "Relocate for resident program", ONE_DASH },*/
-    {"amiga-debug-hunk", no_argument, NULL, OPTION_AMIGA_DEBUG},
-    /*    '\0', NULL, "Output encapsulated stabs in debug hunk", ONE_DASH },*/
-    {"attribute", required_argument, NULL, OPTION_AMIGA_ATTRIBUTE},
-    /*'\0', NULL, "Set section attributes", ONE_DASH },*/
-    {"chip", no_argument, NULL, OPTION_AMIGA_CHIP},
-    /*'\0', NULL, "Force sections in chip memory", ONE_DASH },*/
-    {"fast", no_argument, NULL, OPTION_AMIGA_FAST},
-    /*'\0', NULL, "Force sections in fast memory", ONE_DASH },*/
+  static const struct option xtra_long[] = {
     {"flavor", required_argument, NULL, OPTION_FLAVOR},
-    /*'\0', NULL, "Select a library flavor", ONE_DASH },*/
-    {"pos", no_argument, NULL, OPTION_AMIGA_POS},
-    /*'\0', NULL, "Output a pOS executable", ONE_DASH },*/
+    {"amiga-datadata-reloc", no_argument, NULL, OPTION_AMIGA_DATADATA_RELOC},
+    {"amiga-databss-together", no_argument, NULL, OPTION_AMIGA_DATABSS_TOGETHER},
+    {"amiga-debug-hunk", no_argument, NULL, OPTION_AMIGA_DEBUG},
+    {"attribute", required_argument, NULL, OPTION_AMIGA_ATTRIBUTE},
+    {"fast", no_argument, NULL, OPTION_AMIGA_FAST},
+    {"chip", no_argument, NULL, OPTION_AMIGA_CHIP},
     {NULL, no_argument, NULL, 0}
   };
 
-  indx = optind;
-  if (indx == 0)
-    indx = 1;
+  *longopts = (struct option *)
+    xrealloc (*longopts, nl * sizeof (struct option) + sizeof (xtra_long));
+  memcpy (*longopts + nl, &xtra_long, sizeof (xtra_long));
+}
 
-  opterr = 0;
-  optc = getopt_long_only (argc, argv, "-", longopts, &longind);
-  opterr = prevopterr;
+bfd_boolean
+amiga_handle_option (optc)
+     int optc;
+{
   switch (optc)
     {
     default:
-      optind = prevoptind;
-      return 0;
+      return FALSE;
 
     case 0:
       /* Long option which just sets a flag.  */
       break;
 
     case OPTION_AMIGA_CHIP:
-      amiga_attribute=2; /* We do not use MEMF_FAST, so we do not have to include exec/memory.h*/
+      amiga_attribute = MEMF_CHIP;
       break;
+
     case OPTION_AMIGA_FAST:
-      amiga_attribute=4;
+      amiga_attribute = MEMF_FAST;
       break;
+
     case OPTION_AMIGA_ATTRIBUTE:
       {
 	char *end;
@@ -133,68 +134,41 @@ gld${EMULATION_NAME}_parse_args (argc, argv)
 	  einfo ("%P%F: invalid number \`%s\'\n", optarg);
       }
       break;
+
     case OPTION_AMIGA_DEBUG:
-      write_debug_hunk=1; /* Write out debug hunk */
+      write_debug_hunk = 1; /* Write out debug hunk */
+      break;
+
+    case OPTION_AMIGA_DATABSS_TOGETHER:
+      amiga_base_relative = 1; /* Combine data and bss */
       break;
 
     case OPTION_AMIGA_DATADATA_RELOC:
-      amiga_resident=1; /* Write out datadata_reloc array */
+      amiga_resident = 1; /* Write out datadata_reloc array */
       break;
 
     case OPTION_FLAVOR:
-      {
-	extern void ldfile_add_flavor (char*);
-	ldfile_add_flavor (optarg);
-      }
-      break;
-
-    case OPTION_AMIGA_POS:
-      amiga_pOS_flg = 1;
+      ldfile_add_flavor (optarg);
       break;
     }
-  return 1;
+
+  return TRUE;
 }
 
-static void
-gld${EMULATION_NAME}_before_parse()
+void 
+amiga_after_parse ()
 {
-#if defined(TARGET_IS_amiga_bss) || defined (TARGET_IS_ppcamiga_bss)
-  amiga_base_relative=1;
-  amiga_resident=0;
-#endif
-
-#ifndef TARGET_			/* I.e., if not generic.  */
-  ldfile_output_architecture = bfd_arch_${ARCH};
-#endif /* not TARGET_ */
+  ldfile_sort_flavors();
 }
 
-static void 
-gld${EMULATION_NAME}_after_parse()
-{
-  sort_flavors();
-}
-
-static void 
-gld${EMULATION_NAME}_after_open()
+void 
+amiga_after_open ()
 {
   ldctor_build_sets ();
 }
 
-#if defined(TARGET_IS_amiga) || defined (TARGET_IS_ppcamiga)
-
 static void
- amiga_assign_attribute(lang_input_statement_type *);
-
-void
-amiga_after_allocation()
-{
-#if 0 /* Does not work at the moment */
-  lang_for_each_input_file (amiga_assign_attribute);
-#endif
-}
-
-static void
-amiga_assign_attribute(inp)
+amiga_assign_attribute (inp)
      lang_input_statement_type *inp;
 {
   asection *s;
@@ -204,15 +178,33 @@ amiga_assign_attribute(inp)
       for (s=inp->the_bfd->sections;s!=NULL;s=s->next)
 	amiga_per_section(s)->attribute=inp->amiga_attribute;
     }
-
 }
-#else
-extern void
-amiga_after_allocation();
+
+void
+amiga_after_allocation ()
+{
+  if (0) /* Does not work at the moment */
+    lang_for_each_input_file (amiga_assign_attribute);
+}
+
 #endif
 
+static void
+gld${EMULATION_NAME}_before_parse ()
+{
+  write_debug_hunk = 0;
+
+#if defined(TARGET_IS_amiga_bss)
+  amiga_base_relative = 1;
+#endif
+
+#ifndef TARGET_ /* I.e., if not generic.  */
+  ldfile_output_architecture = bfd_arch_${ARCH};
+#endif /* not TARGET_ */
+}
+
 static char *
-gld${EMULATION_NAME}_get_script(isfile)
+gld${EMULATION_NAME}_get_script (isfile)
      int *isfile;
 EOF
 
@@ -224,7 +216,7 @@ then
 sc="-f stringify.sed"
 
 cat >>e${EMULATION_NAME}.c <<EOF
-{			     
+{
   *isfile = 0;
 
   if (link_info.relocateable == TRUE && config.build_constructors == TRUE)
@@ -245,7 +237,7 @@ else
 # Scripts read from the filesystem.
 
 cat >>e${EMULATION_NAME}.c <<EOF
-{			     
+{
   *isfile = 1;
 
   if (link_info.relocateable == TRUE && config.build_constructors == TRUE)
@@ -270,8 +262,8 @@ struct ld_emulation_xfer_struct ld_${EMULATION_NAME}_emulation =
   gld${EMULATION_NAME}_before_parse,	/* before_parse */
   syslib_default,			/* syslib */
   hll_default,				/* hll */
-  gld${EMULATION_NAME}_after_parse,
-  gld${EMULATION_NAME}_after_open,
+  amiga_after_parse,			/* after_parse */
+  amiga_after_open,			/* after_open */
   amiga_after_allocation,		/* after_allocation */
   set_output_arch_default,		/* set_output_arch */
   ldemul_default_target,		/* choose_target */
@@ -284,11 +276,13 @@ struct ld_emulation_xfer_struct ld_${EMULATION_NAME}_emulation =
   NULL,					/* open_dynamic_library */
   NULL,					/* place_orphan */
   NULL,					/* set_symbols */
-  gld${EMULATION_NAME}_parse_args,
+  NULL,					/* parse_args */
+  amiga_add_options,			/* add_options */
+  amiga_handle_option,			/* handle_option */
   NULL,					/* unrecognized file */
-  NULL,                                 /* list_options */
-  NULL,                                 /* recognized_file */
-  NULL,                                 /* find_potential_libraries */
-  NULL                                  /* new_vers_pattern */
+  NULL,					/* list_options */
+  NULL,					/* recognized_file */
+  NULL,					/* find potential_libraries */
+  NULL					/* new_vers_pattern */
 };
 EOF

@@ -150,6 +150,7 @@ mips*-*-linux-gnu*)
 m68*-*-amigaos*)
   HDEFINES=-mstackextend
   ;;
+
 m68*-*-linux-gnu*)
   HOSTING_CRT0=`echo "$HOSTING_CRT0" | sed -e "s,\\\`egrep.*\"\\\`,/lib/ld.so.1,"`
   ;;

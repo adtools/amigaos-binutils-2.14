@@ -273,6 +273,7 @@ ldctor_build_sets ()
 	  (p->h->type == bfd_link_hash_defined
 	  || p->h->type == bfd_link_hash_defweak))
 	continue;
+
       /* For each set we build:
 	   set:
 	     .long number_of_elements
@@ -364,11 +365,10 @@ ldctor_build_sets ()
 
 	      if (e->name != NULL)
 		minfo ("%T\n", e->name);
-	      else
-		if (e->section->owner)
+	      else if (e->section->owner)
 		minfo ("%G\n", e->section->owner, e->section, e->value);
-		else
-		  minfo ("%s\n", "** ABS **");
+	      else
+		minfo ("%s\n", "** ABS **");
 	    }
 
 	  /* Need SEC_KEEP for --gc-sections.  */

@@ -39,6 +39,10 @@
 #define N_TEXT 4
 #endif
 
+#ifndef OBJ_AMIGAHUNK
+#define OBJ_AMIGAHUNK 0
+#endif
+
 /* This string holds the chars that always start a comment.  If the
    pre-processor is disabled, these aren't very useful.  The macro
    tc_comment_chars points to this.  We use this, rather than the
@@ -83,7 +87,7 @@ int flag_want_pic;
 static int flag_short_refs;	/* -l option */
 static int flag_long_jumps;	/* -S option */
 static int flag_keep_pcrel;	/* --pcrel option.  */
-static int flag_small_code;     /* -sc option */
+static int flag_small_code;	/* -sc option */
 
 #ifdef REGISTER_PREFIX_OPTIONAL
 int flag_reg_prefix_optional = REGISTER_PREFIX_OPTIONAL;
@@ -472,17 +476,18 @@ static const int n_archs = sizeof (archs) / sizeof (archs[0]);
 #define PCREL1632	7	/* 16-bit or 32-bit PC-relative */
 #define PCINDEX		8	/* PC+displacement+index */
 #define ABSTOPCREL	9	/* absolute relax down to 16-bit PC-relative */
-#define ABSREL          10
-#define IMMREL          11
 
-/* ABSREL (nice name;-)) is used in small-code, it might be 
- * implemented base-relative (a4), pc-relative, or base-rel with an extra
- * add instruction to add the base-register
+/* ABSREL (nice name;-)) is used in small-code, it might be implemented
+ * base-relative (a4), pc-relative, or base-relative with an extra add
+ * instruction to add the base-register.
  *
  * IMMREL is the analogous mode for immediate addressing of variables. This
  * one can lead into situations, where a replacement is not possible:
- * addl #foo,a0
- * can't be made pc-relative, if foo is in the text segment */
+ *   addl #foo,a0
+ * can't be made pc-relative, if foo is in the text segment.  */
+
+#define ABSREL		10
+#define IMMREL		11
 
 /* Note that calls to frag_var need to specify the maximum expansion
    needed; this is currently 10 bytes for DBCC.  */
@@ -546,15 +551,15 @@ relax_typeS md_relax_table[] =
   {	0,	0,  4, 0 },
   {	1,	1,  0, 0 },
 
-  {127, -128, 0, 0},
-  {32767, -32768, 2, TAB(ABSREL,LONG)},
-  {0, 0, 6, 0},
-  {1, 1, 0, 0},
+  {   127,   -128,  0, 0 },
+  { 32767, -32768,  2, TAB(ABSREL,LONG) },
+  {     0,      0,  6, 0 },
+  {     1,      1,  0, 0 },
 
-  {127, -128, 0, 0},
-  {32767, -32768, 2, TAB(IMMREL,LONG)},
-  {0, 0, 6, 0},
-  {1, 1, 0, 0},
+  {   127,   -128,  0, 0 },
+  { 32767, -32768,  2, TAB(IMMREL,LONG) },
+  {     0,      0,  6, 0 },
+  {     1,      1,  0, 0 },
 };
 
 /* These are the machine dependent pseudo-ops.  These are included so
@@ -576,13 +581,11 @@ const pseudo_typeS md_pseudo_table[] =
   {"even", s_even, 0},
   {"skip", s_space, 0},
   {"proc", s_proc, 0},
-#ifndef __amigaos__
 #if defined (TE_SUN3) || defined (OBJ_ELF)
   {"align", s_align_bytes, 0},
 #endif
 #ifdef OBJ_ELF
   {"swbeg", s_ignore, 0},
-#endif
 #endif
   {"extend", float_cons, 'x'},
   {"ldouble", float_cons, 'x'},
@@ -977,6 +980,17 @@ tc_gen_reloc (section, fixp)
 			    _("Cannot make %s relocation PC relative"),
 			    bfd_get_reloc_code_name (code));
 	    }
+	}
+    }
+  else if (fixp->tc_fix_data)
+    {
+      switch (fixp->fx_size)
+	{
+	case 1: code = BFD_RELOC_8_BASEREL; break;
+	case 2: code = BFD_RELOC_16_BASEREL; break;
+	case 4: code = BFD_RELOC_32_BASEREL; break;
+	default:
+	  abort ();
 	}
     }
   else
@@ -1970,18 +1984,16 @@ m68k_ip (instring)
 	      else
 		nextword = get_num (&opP->disp, 0);
 	      if (isvar (&opP->disp))
-	        {
-/* This doesn't work when the symbol is N_UNDF! So we ignore this for the moment.
-
-	          if (flag_small_code)
-	            {
-	              add_frag (adds(&opP->disp),
-	      		        offs(&opP->disp),
-	      		        TAB(IMMREL, SZ_UNDEF));
-	      	      break;
-	            }
-	          else
-*/
+		{
+/* This doesn't work when the symbol is N_UNDF! We ignore this for now. */
+		  if (0 && flag_small_code)
+		    {
+		      add_frag (adds(&opP->disp),
+				offs(&opP->disp),
+				TAB(IMMREL, SZ_UNDEF));
+		       break;
+		    }
+		  else
 		    add_fix(s[1], &opP->disp, 0, 0, opP->disp.baserel);
 	        }
 	      switch (s[1])
@@ -2468,10 +2480,8 @@ m68k_ip (instring)
 		    }
 		  /* Fall through into long */
 		case SIZE_LONG:
-#if 0
-        /* This doesn't work when the symbol is N_UNDF! We ignore this for now. */
-
-		  if (flag_small_code)
+/* This doesn't work when the symbol is N_UNDF! We ignore this for now. */
+		  if (0 && flag_small_code)
 		    {
 		      tmpreg=0x3A; /* 7.2 */
 		      add_frag (adds(&opP->disp),
@@ -2479,7 +2489,6 @@ m68k_ip (instring)
 				TAB(ABSREL, SZ_UNDEF));
 		      break;
 		    }
-#endif
 		  if (isvar (&opP->disp))
 		    add_fix ('l', &opP->disp, 0, 0, opP->disp.baserel);
 
@@ -3376,6 +3385,12 @@ struct init_entry
     int number;
   };
 
+#if defined(TE_AMIGA)
+  #define FRAME ADDR5
+#else
+  #define FRAME ADDR6
+#endif
+
 static const struct init_entry init_table[] =
 {
   { "d0", DATA0 },
@@ -3392,8 +3407,8 @@ static const struct init_entry init_table[] =
   { "a3", ADDR3 },
   { "a4", ADDR4 },
   { "a5", ADDR5 },
-  { "fp", ADDR5 },
   { "a6", ADDR6 },
+  { "fp", FRAME },
   { "a7", ADDR7 },
   { "sp", ADDR7 },
   { "ssp", ADDR7 },
@@ -4444,8 +4459,8 @@ md_convert_frag_1 (fragP)
       break;
     case TAB (BRABSJUNC, LONG):
       if (flag_small_code)
-        {
-	  as_bad("Long branch in small code model, not supported.");
+	{
+	  as_bad (_("Long branch in small code model, not supported."));
 	}
       else if (fragP->fr_opcode[0] == 0x61)	/* jbsr */
 	{
@@ -4599,68 +4614,65 @@ md_convert_frag_1 (fragP)
       fragP->fr_fix += 4;
       break;
     case TAB(ABSREL,BYTE):
-      as_bad ("ABSREL_BYTE: how the ** does this look ?? \n");
+      as_bad (_("ABSREL_BYTE: how the ** does this look??"));
       break;
     case TAB(ABSREL,SHORT):
-      subseg_change (text_section, 0);
-      fragP->fr_fix += 2;
       fragP->fr_opcode[1] &= ~0x3f;
+      fragP->fr_fix += 2;
       if ((S_GET_TYPE (fragP->fr_symbol)) == N_TEXT)
-        {
-          /* so this is really a pc-relative address */
-          fragP->fr_opcode[1] |=  0x3a;
-          fix_new(fragP,(int)(fragP->fr_fix),2,fragP->fr_symbol, fragP->fr_offset+2, 1, NO_RELOC, 0);
-  	break;
-        }
+	{
+	  /* so this is really a pc-relative address */
+	  fragP->fr_opcode[1] |= 0x3a;
+	  fix_new (fragP, fragP->fr_fix, 2, fragP->fr_symbol, fragP->fr_offset, 1, NO_RELOC, 0);
+  	  break;
+	}
       /* in that case we have to generate base-relative code
        * (note: if we're in N_UNDF, this could as well be pc-relative, but the linker
        *        will have to do the final patch in that case) */
-      fragP->fr_opcode[1] |=  0x2c;  /* (a4) */
-      fix_new(fragP,(int)(fragP->fr_fix),2,fragP->fr_symbol,fragP->fr_offset, 0, NO_RELOC, 1);
+      fragP->fr_opcode[1] |= 0x2c;  /* (a4) */
+      fix_new (fragP, fragP->fr_fix, 2, fragP->fr_symbol, fragP->fr_offset, 0, NO_RELOC, 1);
       break;
     case TAB(ABSREL,LONG):
-      as_bad ("ABSREL_LONG: sorry, not supported.\n");
+      as_bad (_("ABSREL_LONG: sorry, not supported."));
       break;
-  
     case TAB(IMMREL,BYTE):
-      as_bad ("IMMREL_BYTE: how the ** does this look ?? \n");
+      as_bad (_("IMMREL_BYTE: how the ** does this look??"));
       break;
     case TAB(IMMREL,SHORT):
-      subseg_change (text_section, 0);
       if ((S_GET_TYPE (fragP->fr_symbol)) == N_TEXT)
-        {
-  	/* we can only fix operations on data registers, not on <ea> */
- 	if ((fragP->fr_opcode[1] & 0x38) != 0)
-   	  {
-  	    /* use the normal reloc32, sigh... */
-  	    fix_new (fragP,(int)(fragP->fr_fix),4,fragP->fr_symbol, fragP->fr_offset, 0, NO_RELOC, 0);
-      fragP->fr_fix += 4;
-      break;
-    }
-  
-          /* so this is really a pc-relative address
-           * What we have to do now is a VERY UGLY AND BIG KLUDGE. Basically do the
-           * following thing:
-           *   turn
-           *     addl #foo,d0      (foo is N_TEXT)
-           *   into
-           *     pea  foo(pc)
-           *     addl (sp)+,d0
-           */
-          *buffer_address++ = fragP->fr_opcode[0]; /* save the original command */
-  	*buffer_address++ = fragP->fr_opcode[1];
-          fragP->fr_opcode[0] = 0x48; 	/* PEA */
-          fragP->fr_opcode[1] = 0x7a;
-          fix_new(fragP,(int)(fragP->fr_fix),2,fragP->fr_symbol, fragP->fr_offset+2, 1, NO_RELOC, 0);
-  	
-          *buffer_address++ = 0x9f;	/* sp@+ */
-  	fragP->fr_fix += 4;	/* two byte fix, two byte code extension */
-  	break;
-        }
+	{
+	/* we can only fix operations on data registers, not on <ea> */
+	if ((fragP->fr_opcode[1] & 0x38) != 0)
+	  {
+	    /* use the normal reloc32, sigh... */
+	    fix_new (fragP, fragP->fr_fix, 4, fragP->fr_symbol, fragP->fr_offset, 0, NO_RELOC, 0);
+	    fragP->fr_fix += 4;
+	    break;
+	  }
+
+	  /* so this is really a pc-relative address
+	   * What we have to do now is a VERY UGLY AND BIG KLUDGE. Basically do the
+	   * following thing:
+	   *   turn
+	   *     addl #foo,d0      (foo is N_TEXT)
+	   *   into
+	   *     pea  foo(pc)
+	   *     addl (sp)+,d0
+	   */
+	  *buffer_address++ = fragP->fr_opcode[0]; /* save the original command */
+	  *buffer_address++ = fragP->fr_opcode[1];
+	  fragP->fr_opcode[0] = 0x48; 	/* PEA */
+	  fragP->fr_opcode[1] = 0x7a;
+	  fix_new (fragP, fragP->fr_fix, 2, fragP->fr_symbol, fragP->fr_offset, 1, NO_RELOC, 0);
+
+	  *buffer_address++ = 0x9f;	/* sp@+ */
+	  fragP->fr_fix += 4;	/* two byte fix, two byte code extension */
+	  break;
+	}
       /* in that case we have to generate base-relative code
        * (note: if we're in N_UNDF, this could as well be pc-relative, but the linker
        *        will have to do the final patch in that case) */
-  
+
       /* analogous (more or less;-)) to above, the following conversion is done
        *   turn
        *     addl #bar,d0		(bar is N_DATA)
@@ -4668,8 +4680,8 @@ md_convert_frag_1 (fragP)
        *	   addl #<bar>,d0	where <bar> is a baserel-reloc
        *     addl a4,d0
        */
-   
-      fix_new(fragP,(int)(fragP->fr_fix), 4,fragP->fr_symbol,fragP->fr_offset, 0, NO_RELOC, 1);
+
+      fix_new (fragP, fragP->fr_fix, 4, fragP->fr_symbol, fragP->fr_offset, 0, NO_RELOC, 1);
       *buffer_address++ = 0xd0;
       *buffer_address++ = 0x8c;
       break;
@@ -4719,7 +4731,7 @@ md_estimate_size_before_relax (fragP, segment)
 	  {
 	    fragP->fr_subtype = TAB (TABTYPE (fragP->fr_subtype), BYTE);
 	  }
-	else if (flag_short_refs)
+	else if (flag_short_refs || flag_small_code)
 	  {
 	    /* Symbol is undefined and we want short ref.  */
 	    fragP->fr_subtype = TAB (TABTYPE (fragP->fr_subtype), SHORT);
@@ -6882,7 +6894,7 @@ s_mri_endw (ignore)
 #ifdef OBJ_ELF
 const char *md_shortopts = "lSA:m:kQ:V";
 #else
-const char *md_shortopts = "lSA:m:k";
+const char *md_shortopts = "lSA:m:s:k";
 #endif
 
 struct option md_longopts[] = {
@@ -6931,11 +6943,11 @@ md_parse_option (c, arg)
 
     case 's':
       if (!strcmp(arg, "c") || !strcmp(arg, "mallcode"))
-        flag_small_code = 1;
+	flag_small_code = 1;
       else
-        return 0;
+	return 0;
       break;
-      
+
     case 'A':
       if (*arg == 'm')
 	arg++;
@@ -7117,6 +7129,7 @@ md_show_usage (stream)
 			[default yes for 68020 and up]\n\
 -pic, -k		generate position independent code\n\
 -S			turn jbsr into jsr\n\
+-smallcode, -sc		small code model\n\
 --pcrel                 never turn PC-relative branches into absolute jumps\n\
 --register-prefix-optional\n\
 			recognize register names without prefix character\n\
@@ -7265,6 +7278,8 @@ md_pcrel_from (fixP)
   adjust = ((fixP->fx_pcrel_adjust & 0xff) ^ 0x80) - 0x80;
   if (adjust == 64)
     adjust = -1;
+  if (OBJ_AMIGAHUNK)
+    return -adjust;
   return fixP->fx_where + fixP->fx_frag->fr_address - adjust;
 }
 

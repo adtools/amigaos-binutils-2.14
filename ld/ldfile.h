@@ -61,4 +61,9 @@ extern bfd_boolean ldfile_open_file_search
   PARAMS ((const char *arch, struct lang_input_statement_struct *,
 	   const char *lib, const char *suffix));
 
+extern void ldfile_sort_flavors
+  PARAMS ((void));
+extern void ldfile_add_flavor
+  PARAMS ((const char *));
+
 #endif

@@ -479,6 +479,7 @@ main (argc, argv)
   else
     output_bfd->flags |= EXEC_P;
 #endif
+
   ldwrite ();
 
   if (config.map_file != NULL)

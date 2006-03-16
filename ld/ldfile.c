@@ -37,9 +37,6 @@
 #include "libiberty.h"
 #include "filenames.h"
 
-static int n_flavors, flavors_len;
-char **flavors;
-
 const char * ldfile_input_filename;
 bfd_boolean  ldfile_assumed_script = FALSE;
 const char * ldfile_output_machine_name = "";
@@ -77,6 +74,40 @@ static FILE *try_open
 static bfd_boolean is_sysrooted_pathname
   PARAMS ((const char *, bfd_boolean));
 
+/* Flavour support.  */
+
+static int flavors_cmp PARAMS ((const void *f1, const void *f2));
+
+static int n_flavors, flavors_len;
+static char **flavors;
+
+static int
+flavors_cmp (f1, f2)
+     const void *f1, *f2;
+{
+  return strcmp (*(char **)f1, *(char **)f2);
+}
+
+void
+ldfile_sort_flavors ()
+{
+  if (n_flavors > 1)
+    qsort ((void *) flavors, n_flavors, sizeof (char **), flavors_cmp);
+}
+
+void
+ldfile_add_flavor (name)
+     const char *name;
+{
+  n_flavors++;
+  if (flavors)
+    flavors = (char **) xrealloc ((PTR)flavors, n_flavors * sizeof (char *));
+  else
+    flavors = (char **) xmalloc (sizeof (char *));
+  flavors [n_flavors-1] = (char *) name;
+  flavors_len += strlen (name);
+}
+
 /* Test whether a pathname, after canonicalization, is the same or a
    sub-directory of the sysroot directory.  */
 
@@ -111,32 +142,6 @@ is_sysrooted_pathname (name, notsame)
 
 /* Adds NAME to the library search path.
    Makes a copy of NAME using xmalloc().  */
-
-static int flavors_cmp (f1, f2)
-     const void *f1, *f2;
-{
-  return strcmp (*(char**)f1, *(char**)f2);
-}
-
-void
-sort_flavors ()
-{
-  if (n_flavors > 1)
-    qsort ((void*)flavors, n_flavors, sizeof(char**), flavors_cmp);
-}
-
-void
-ldfile_add_flavor (name)
-     char *name;
-{
-  n_flavors++;
-  if (flavors)
-    flavors = (char**) xrealloc ((PTR)flavors, n_flavors*sizeof (char*));
-  else
-    flavors = (char**) xmalloc (sizeof (char*));
-  flavors [n_flavors-1] = name;
-  flavors_len += strlen (name);
-}
 
 void
 ldfile_add_library_path (name, cmdline)
@@ -333,8 +338,8 @@ ldfile_open_file_search (arch, entry, lib, suffix)
      const char *lib;
      const char *suffix;
 {
-  search_dirs_type *search;
   char *flavor_dir = (char *) alloca (flavors_len + n_flavors + 1);
+  search_dirs_type *search;
 
   /* If this is not an archive, try to open it in the current
      directory first.  */
@@ -367,7 +372,7 @@ ldfile_open_file_search (arch, entry, lib, suffix)
        search = search->next)
     {
       char *string;
-      int i, count=n_flavors;
+      int i, count;
 
       if (entry->dynamic && ! link_info.relocateable)
 	{
@@ -378,6 +383,7 @@ ldfile_open_file_search (arch, entry, lib, suffix)
 	    }
 	}
 
+#if 0
       string = (char *) xmalloc (strlen (search->name)
 				 + strlen (slash)
 				 + strlen (lib)
@@ -392,13 +398,22 @@ ldfile_open_file_search (arch, entry, lib, suffix)
       else
 	sprintf (string, "%s%s%s", search->name, slash, entry->filename);
 
-      for (count = n_flavors; count>=0; count--) {
+      if (ldfile_try_open_bfd (string, entry))
+	{
+	  entry->filename = string;
+	  entry->sysrooted = search->sysrooted;
+	  return TRUE;
+	}
+
+      free (string);
+#else
+      for (count=n_flavors; count>=0; count--) {
+
 	*flavor_dir = '\0';
 	for (i=0; i<count; i++) {
 	  strcat (flavor_dir, flavors[i]);
 	  strcat (flavor_dir, slash);
 	}
-
 	string = (char *) xmalloc (strlen (search->name)
 				   + strlen (slash)
 				   + strlen (flavor_dir)
@@ -407,7 +422,7 @@ ldfile_open_file_search (arch, entry, lib, suffix)
 				   + strlen (arch)
 				   + strlen (suffix)
 				   + 1);
-	
+
 	if (entry->is_archive)
 	  sprintf (string, "%s%s%s%s%s%s%s", search->name, slash, flavor_dir,
 		   lib, entry->filename, arch, suffix);
@@ -416,15 +431,16 @@ ldfile_open_file_search (arch, entry, lib, suffix)
 	else
 	  sprintf (string, "%s%s%s%s", search->name, slash, flavor_dir,
 		   entry->filename);
-	
-      if (ldfile_try_open_bfd (string, entry))
-	{
-	  entry->filename = string;
-	  return TRUE;
-	}
 
-      free (string);
-    }
+	if (ldfile_try_open_bfd (string, entry))
+	  {
+	    entry->filename = string;
+	    return TRUE;
+	  }
+
+	free (string);
+      }
+#endif
     }
 
   return FALSE;

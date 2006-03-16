@@ -1562,7 +1562,7 @@ s_data (ignore)
 #ifdef OBJ_AMIGAHUNK
 void
 s_data_chip (ignore)
-     int ignore;
+     int ignore ATTRIBUTE_UNUSED;
 {
   int temp = get_absolute_expression ();
   subseg_set (data_chip_section, (subsegT) temp);

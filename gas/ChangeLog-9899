@@ -3472,11 +3472,6 @@ Sat Jun  6 00:02:41 1998  Nick Clifton  <nickc@cygnus.com>
 	* config/tc-d30v.c (md_assemble): Set execution type to unknown
 	after emitting a word of noops.
 
-Sat Jun  6 23:06:18 1998  Fred Fish  <fnf@ninemoons.com>
-
-	* config/tc-i386.c (md_section_align): Re-enable use of forced
-	section alignment based only on BFD_ASSEMBLER being defined.
-
 Fri Jun  5 23:27:04 1998  Alan Modra  <alan@spri.levels.unisa.edu.au>
 
 	* config/tc-i386.c (mode_from_disp_size): Disp16 is mode 2.
@@ -3527,11 +3522,6 @@ Fri Jun  5 10:50:53 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/tc-d30v.c (md_assemble): Store previous segment state
 	with previous instruction.
-
-Thu Jun  4 22:18:50 1998  Fred Fish  <fnf@ninemoons.com>
-
-	* read.c (output_leb128): Do not inline as it is used externally
-	for some configuration.s
 
 Wed Jun  3 18:21:56 1998  Alan Modra  <alan@spri.levels.unisa.edu.au>
 

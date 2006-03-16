@@ -2066,27 +2066,24 @@ NAME(aout,swap_std_reloc_out) (abfd, g, natptr)
 
   PUT_WORD (abfd, g->address, natptr->r_address);
 
-  r_length = g->howto->size ;	/* Size as a power of two */
+  r_length = g->howto->size ;	/* Size as a power of two.  */
   r_pcrel  = (int) g->howto->pc_relative; /* Relative to PC?  */
 #if 1
-  /* FIXME! "#if 1" is the wrong way to select this Amiga specific code.
-   We can't just test for __amigaos__ defined either, since we may be
-   building a cross compiler and __amigaos__ is only defined if the
-   compiler we are using is targeted for the Amiga. */
-  /* Changed for cooperation with AMIGA backend */
-  /* This only applies, if aout flavour    191194 ST*/
-  /* XXX This relies on relocs coming from a.out files.  */
-  if (bfd_asymbol_bfd(sym)->xvec->flavour==bfd_target_aout_flavour)
+  /* FIXME! "#if 1" is the wrong way to select this Amiga specific code.  */
+  switch (bfd_asymbol_bfd(sym)->xvec->flavour)
     {
-  r_baserel = (g->howto->type & 8) != 0;
-  r_jmptable = (g->howto->type & 16) != 0;
-  r_relative = (g->howto->type & 32) != 0;
-    }
-  else
-    {
+    case bfd_target_amiga_flavour:
+    case bfd_target_aout_flavour:
+      r_baserel = (g->howto->type & 8) != 0;
+      r_jmptable = (g->howto->type & 16) != 0;
+      r_relative = (g->howto->type & 32) != 0;
+      break;
+    default:
       r_baserel=r_jmptable=r_relative=0;
+      break;
     }
 #else
+  /* XXX This relies on relocs coming from a.out files.  */
   r_baserel = (g->howto->type & 8) != 0;
   r_jmptable = (g->howto->type & 16) != 0;
   r_relative = (g->howto->type & 32) != 0;
