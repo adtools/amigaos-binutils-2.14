@@ -2434,11 +2434,16 @@ ppc_elf_additional_program_headers (abfd)
   asection *s;
   int ret;
 
-  ret = 0;
+  /* -HJF- 20070410
+  	  This is an assumption. Since we separate .text and the 
+      dynamic linkage stuff, we need an addition PT_LOAD and hence one
+      additional program header. */
+      
+  ret = 1;
 
   s = bfd_get_section_by_name (abfd, ".interp");
   if (s != NULL)
-    ++ret;
+    ret++;
 
   s = bfd_get_section_by_name (abfd, ".sbss2");
   if (s != NULL && (s->flags & SEC_LOAD) != 0 && s->_raw_size > 0)
@@ -2479,7 +2484,10 @@ ppc_elf_create_got (abfd, info)
   if (s == NULL)
     abort ();
 
-  flags = (SEC_ALLOC | SEC_LOAD | SEC_CODE | SEC_HAS_CONTENTS | SEC_IN_MEMORY
+  /*  -HJF 20070125- Removed the SEC_CODE to make it non-execute. We do not use the blrl in
+                     the .got, and leaving it would place all data sections into the code
+		     segment */
+  flags = (SEC_ALLOC | SEC_LOAD /*| SEC_CODE*/ | SEC_HAS_CONTENTS | SEC_IN_MEMORY
 	   | SEC_LINKER_CREATED);
   if (!bfd_set_section_flags (abfd, s, flags))
     return FALSE;
@@ -4244,13 +4252,13 @@ ppc_elf_finish_dynamic_symbol (output_bfd, info, h, sym)
 #ifdef DEBUG
   fprintf (stderr, "\n");
 #endif
-
+#if 0 // -HJF- 20070410 removed this, we need them to stay non-absolute
   /* Mark some specially defined symbols as absolute.  */
   if (strcmp (h->root.root.string, "_DYNAMIC") == 0
       || strcmp (h->root.root.string, "_GLOBAL_OFFSET_TABLE_") == 0
       || strcmp (h->root.root.string, "_PROCEDURE_LINKAGE_TABLE_") == 0)
     sym->st_shndx = SHN_ABS;
-
+#endif
   return TRUE;
 }
 
