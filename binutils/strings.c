@@ -98,7 +98,11 @@ extern int errno;
 #define DATA_FLAGS (SEC_ALLOC | SEC_LOAD | SEC_HAS_CONTENTS)
 
 #ifdef HAVE_FOPEN64
+#if defined(__amigaos4__)
+typedef _off64_t file_off;
+#else
 typedef off64_t file_off;
+#endif
 #define file_open(s,m) fopen64(s, m)
 #else
 typedef off_t file_off;

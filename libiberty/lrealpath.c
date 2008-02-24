@@ -66,6 +66,12 @@ extern char *canonicalize_file_name (const char *);
 # endif
 #endif
 
+/* OS4 does not have _PC_PATH_MAX so we use the
+   REALPATH_LIMIT method only */
+#if defined(__amigaos4__)
+#undef HAVE_REALPATH
+#endif
+
 char *
 lrealpath (filename)
      const char *filename;
