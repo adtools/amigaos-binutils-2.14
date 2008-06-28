@@ -18,7 +18,7 @@ changequote([,])dnl
 bfd_version_string="\"${VERSION}\""
 if test x${is_release} = x; then
   bfd_version_date=`sed -n -e 's/.*DATE //p' < ${srcdir}/version.h`
-  bfd_version_string="\"${VERSION} ${bfd_version_date} (AmigaOS build 20080224)\""
+  bfd_version_string="\"${VERSION} ${bfd_version_date} (adtools build 20080628)\""
 fi
 AC_SUBST(bfd_version)
 AC_SUBST(bfd_version_string)
