@@ -4315,6 +4315,9 @@ md_apply_fix3 (fixP, valP, seg)
   buf += fixP->fx_where;
   /* end ibm compiler workaround */
 
+  if (OBJ_AMIGAHUNK && fixP->fx_pcrel)
+    return;
+
   val = ((val & 0xffffffff) ^ 0x80000000) - 0x80000000;
 
   if (fixP->fx_addsy == NULL && fixP->fx_pcrel == 0)
@@ -7283,8 +7286,6 @@ md_pcrel_from (fixP)
   adjust = ((fixP->fx_pcrel_adjust & 0xff) ^ 0x80) - 0x80;
   if (adjust == 64)
     adjust = -1;
-  if (OBJ_AMIGAHUNK)
-    return -adjust;
   return fixP->fx_where + fixP->fx_frag->fr_address - adjust;
 }
 
