@@ -4734,7 +4734,7 @@ md_estimate_size_before_relax (fragP, segment)
 	  {
 	    fragP->fr_subtype = TAB (TABTYPE (fragP->fr_subtype), BYTE);
 	  }
-	else if (flag_short_refs || flag_small_code)
+	else if (flag_short_refs || (0 && flag_small_code))
 	  {
 	    /* Symbol is undefined and we want short ref.  */
 	    fragP->fr_subtype = TAB (TABTYPE (fragP->fr_subtype), SHORT);
@@ -4810,7 +4810,7 @@ md_estimate_size_before_relax (fragP, segment)
       {
 	if ((S_GET_SEGMENT (fragP->fr_symbol) == segment
 	     && relaxable_symbol (fragP->fr_symbol))
-	    || flag_short_refs || flag_small_code)
+	    || flag_short_refs || (0 && flag_small_code))
 	  {
 	    fragP->fr_subtype = TAB (ABSREL, SHORT);
 	  }
