@@ -4804,12 +4804,11 @@ md_estimate_size_before_relax (fragP, segment)
       }
 
     case TAB(ABSREL,SZ_UNDEF):
-	if ((S_GET_SEGMENT (fragP->fr_symbol)) == segment || flag_short_refs || flag_small_code) {
+	if ((S_GET_SEGMENT (fragP->fr_symbol) == segment && relaxable_symbol (fragP->fr_symbol))
+	    || flag_short_refs || flag_small_code) {
 		fragP->fr_subtype = TAB(ABSREL, SHORT);
-		fragP->fr_var += 2;
 	} else {
 		fragP->fr_subtype = TAB(ABSREL, LONG);
-		fragP->fr_var += 6;
 	}
       break;
 
