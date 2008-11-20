@@ -552,12 +552,12 @@ relax_typeS md_relax_table[] =
   {	1,	1,  0, 0 },
 
   {   127,   -128,  0, 0 },
-  { 32767, -32768,  2, TAB(ABSREL,LONG) },
+  { 32767, -32768,  2, TAB (ABSREL, LONG) },
   {     0,      0,  6, 0 },
   {     1,      1,  0, 0 },
 
   {   127,   -128,  0, 0 },
-  { 32767, -32768,  2, TAB(IMMREL,LONG) },
+  { 32767, -32768,  2, TAB (IMMREL, LONG) },
   {     0,      0,  6, 0 },
   {     1,      1,  0, 0 },
 };
@@ -1988,9 +1988,9 @@ m68k_ip (instring)
 /* This doesn't work when the symbol is N_UNDF! We ignore this for now. */
 		  if (0 && flag_small_code)
 		    {
-		      add_frag (adds(&opP->disp),
-				offs(&opP->disp),
-				TAB(IMMREL, SZ_UNDEF));
+		      add_frag (adds (&opP->disp),
+				offs (&opP->disp),
+				TAB (IMMREL, SZ_UNDEF));
 		       break;
 		    }
 		  else
@@ -2484,9 +2484,9 @@ m68k_ip (instring)
 		  if (0 && flag_small_code)
 		    {
 		      tmpreg=0x3A; /* 7.2 */
-		      add_frag (adds(&opP->disp),
-			        offs(&opP->disp),
-				TAB(ABSREL, SZ_UNDEF));
+		      add_frag (adds (&opP->disp),
+			        offs (&opP->disp),
+				TAB (ABSREL, SZ_UNDEF));
 		      break;
 		    }
 		  if (isvar (&opP->disp))
@@ -4613,13 +4613,13 @@ md_convert_frag_1 (fragP)
 	       0, RELAX_RELOC_ABS32, 0);
       fragP->fr_fix += 4;
       break;
-    case TAB(ABSREL,BYTE):
+    case TAB (ABSREL, BYTE):
       as_bad (_("ABSREL_BYTE: how the ** does this look??"));
       break;
-    case TAB(ABSREL,SHORT):
+    case TAB (ABSREL, SHORT):
       fragP->fr_opcode[1] &= ~0x3f;
       fragP->fr_fix += 2;
-      if ((S_GET_TYPE (fragP->fr_symbol)) == N_TEXT)
+      if (S_GET_TYPE (fragP->fr_symbol) == N_TEXT)
 	{
 	  /* so this is really a pc-relative address */
 	  fragP->fr_opcode[1] |= 0x3a;
@@ -4632,14 +4632,14 @@ md_convert_frag_1 (fragP)
       fragP->fr_opcode[1] |= 0x2c;  /* (a4) */
       fix_new (fragP, fragP->fr_fix, 2, fragP->fr_symbol, fragP->fr_offset, 0, NO_RELOC, 1);
       break;
-    case TAB(ABSREL,LONG):
+    case TAB (ABSREL, LONG):
       as_bad (_("ABSREL_LONG: sorry, not supported."));
       break;
-    case TAB(IMMREL,BYTE):
+    case TAB (IMMREL, BYTE):
       as_bad (_("IMMREL_BYTE: how the ** does this look??"));
       break;
-    case TAB(IMMREL,SHORT):
-      if ((S_GET_TYPE (fragP->fr_symbol)) == N_TEXT)
+    case TAB (IMMREL, SHORT):
+      if (S_GET_TYPE (fragP->fr_symbol) == N_TEXT)
 	{
 	/* we can only fix operations on data registers, not on <ea> */
 	if ((fragP->fr_opcode[1] & 0x38) != 0)
@@ -4803,14 +4803,20 @@ md_estimate_size_before_relax (fragP, segment)
 	break;
       }
 
-    case TAB(ABSREL,SZ_UNDEF):
-	if ((S_GET_SEGMENT (fragP->fr_symbol) == segment && relaxable_symbol (fragP->fr_symbol))
-	    || flag_short_refs || flag_small_code) {
-		fragP->fr_subtype = TAB(ABSREL, SHORT);
-	} else {
-		fragP->fr_subtype = TAB(ABSREL, LONG);
-	}
-      break;
+    case TAB (ABSREL, SZ_UNDEF):
+      {
+	if ((S_GET_SEGMENT (fragP->fr_symbol) == segment
+	     && relaxable_symbol (fragP->fr_symbol))
+	    || flag_short_refs || flag_small_code)
+	  {
+	    fragP->fr_subtype = TAB (ABSREL, SHORT);
+	  }
+	else
+	  {
+	    fragP->fr_subtype = TAB (ABSREL, LONG);
+	  }
+	break;
+      }
 
     default:
       break;
