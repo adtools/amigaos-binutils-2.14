@@ -148,7 +148,7 @@ typedef struct amiga_ardata_struct {
   unsigned long defsym_count;
 } amiga_ardata_type;
 
-#define amiga_ardata(bfd) (*(amiga_ardata_type **)&(bfd)->tdata.aout_ar_data)
+#define amiga_ardata(bfd) (*(amiga_ardata_type **)(void *)&(bfd)->tdata.aout_ar_data)
 
 #define bfd_msg (*_bfd_error_handler)
 
@@ -417,7 +417,7 @@ amiga_add_reloc (abfd, section, offset, symbol, howto, target_hunk)
   }
   else
     reloc->symbol = symbol;
-  reloc->relent.sym_ptr_ptr = (asymbol **) &reloc->symbol;
+  reloc->relent.sym_ptr_ptr = (asymbol **) (void *) &reloc->symbol;
   reloc->target_hunk = target_hunk;
 
   return TRUE;
