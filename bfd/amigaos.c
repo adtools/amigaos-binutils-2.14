@@ -1588,16 +1588,22 @@ amiga_write_archive_contents (arch)
 	  return FALSE;
 	}
 
-      if (stat (object->filename, &status) != 0)
+      if (object->arelt_data != NULL)
 	{
-	  bfd_set_error (bfd_error_system_call);
-	  return FALSE;
+	  remaining = arelt_size (object);
+	}
+      else
+	{
+	  if (stat (object->filename, &status) != 0)
+	    {
+	      bfd_set_error (bfd_error_system_call);
+	      return FALSE;
+	    }
+	  remaining = status.st_size;
 	}
 
       if (bfd_seek (object, 0, SEEK_SET))
 	return FALSE;
-
-      remaining = status.st_size;
 
       while (remaining)
 	{
@@ -2934,23 +2940,30 @@ amiga_archive_p (abfd)
   symindex symcount=0;
   int units;
 
-  bfd_set_error (bfd_error_wrong_format);
-
   if (bfd_stat (abfd, &stat_buffer) < 0)
-    return NULL;
+    {
+      bfd_set_error (bfd_error_wrong_format);
+      return NULL;
+    }
 
   if (stat_buffer.st_size != 0)
     {
       /* scan the units */
       if (!parse_archive_units (abfd, &units, stat_buffer.st_size, FALSE,
 				&symbols, &symcount))
-	return NULL;
+	{
+	  bfd_set_error (bfd_error_wrong_format);
+	  return NULL;
+	}
 
       /* if there is only one unit, we consider it's an object, not an
 	 archive. Obviously it's not always true but taking objects for
 	 archives makes ld fail, so we don't have much of a choice */
       if (units == 1)
-	return NULL;
+	{
+	  bfd_set_error (bfd_error_wrong_format);
+	  return NULL;
+	}
     }
 
   if (abfd->arelt_data)
@@ -2961,10 +2974,10 @@ amiga_archive_p (abfd)
 
   if (amiga_mkarchive (abfd))
     {
-      amiga_ardata(abfd)->filesize = stat_buffer.st_size;
       bfd_ardata(abfd)->first_file_filepos = 0;
-      amiga_ardata(abfd)->defsym_count = symcount;
+      amiga_ardata(abfd)->filesize = stat_buffer.st_size;
       amiga_ardata(abfd)->defsyms = symbols;
+      amiga_ardata(abfd)->defsym_count = symcount;
       if (amiga_slurp_armap (abfd))
 	return abfd->xvec;
     }
@@ -3056,12 +3069,11 @@ amiga_generic_stat_arch_elt (abfd, buf)
     }
 
   /* No header in amiga archives. Let's set reasonable default values */
-  buf->st_mtime = 0;
+  buf->st_mode = 0644;
   buf->st_uid = 0;
   buf->st_gid = 0;
-  buf->st_mode = 0666;
-
-  buf->st_size = ((struct areltdata *) abfd->arelt_data)->parsed_size;
+  buf->st_mtime = 2922*24*60*60;
+  buf->st_size = arelt_size (abfd);
 
   return 0;
 }
