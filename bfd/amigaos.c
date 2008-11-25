@@ -1346,11 +1346,11 @@ amiga_write_object_contents (abfd)
 	  switch (i)
 	    {
 	    case MEMF_CHIP:
-	      n[0]|=0x40000000;
+	      n[0]|=HUNKF_CHIP;
 	      i=1;
 	      break;
 	    case MEMF_FAST:
-	      n[0]|=0x80000000;
+	      n[0]|=HUNKF_FAST;
 	      i=1;
 	      break;
 	    case 0: /* nothing */
