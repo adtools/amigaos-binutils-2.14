@@ -2951,13 +2951,18 @@ amiga_archive_p (abfd)
 	  return NULL;
 	}
 
-      /* if there is only one unit, we consider it's an object, not an
-	 archive. Obviously it's not always true but taking objects for
-	 archives makes ld fail, so we don't have much of a choice */
+      /* if there is only one unit, file suffix is not .a and .lib, we
+	 consider it an object, not an archive. Obviously it's not
+	 always true but taking objects for archives makes ld fail,
+	 so we don't have much of a choice */
       if (units == 1)
 	{
-	  bfd_set_error (bfd_error_wrong_format);
-	  return NULL;
+	  char *p = strrchr (abfd->filename, '.');
+	  if (p == NULL || (strcmp (p, ".a") && strcmp (p, ".lib")))
+	    {
+	      bfd_set_error (bfd_error_wrong_format);
+	      return NULL;
+	    }
 	}
     }
 
