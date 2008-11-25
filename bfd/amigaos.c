@@ -129,6 +129,9 @@ BFD:
 extern PTR alloca PARAMS ((size_t));
 #endif
 
+#define bfd_is_bfd_section(sec) \
+  (bfd_is_abs_section(sec)||bfd_is_com_section(sec)||bfd_is_und_section(sec)||bfd_is_ind_section(sec))
+
 struct arch_syms {
   unsigned long offset;		/* disk offset in the archive */
   unsigned long size;		/* size of the block of symbols */
@@ -1248,8 +1251,7 @@ determine_datadata_relocs (abfd, section)
       insection=sym_p->section;
 
       /* Is reloc relative to a special section? */
-      if ((insection==bfd_abs_section_ptr)||(insection==bfd_com_section_ptr)||
-	  (insection==bfd_und_section_ptr)||(insection==bfd_ind_section_ptr))
+      if (bfd_is_bfd_section(insection))
 	continue; /* Nothing to do, since this translates to HUNK_EXT */
       if (insection->output_section == section)
 	relocs++;
@@ -1385,7 +1387,7 @@ amiga_write_object_contents (abfd)
       for (i=0;i<abfd->symcount;i++) {
 	asymbol *sym_p=abfd->outsymbols[i];
 	sec_ptr osection=sym_p->section;
-	if (!osection || osection->output_section!=bfd_com_section_ptr)
+	if (!osection || !bfd_is_com_section(osection->output_section))
 	  continue;
 	for (p=abfd->sections; p!=NULL; p=p->next) {
 	  if (!strcmp(p->name, ".bss")) {
@@ -1808,10 +1810,7 @@ amiga_write_section_contents (abfd, section, data_sec, datadata_relocs,
       DPRINT(5,("Sec for reloc is %lx(%s)\n",insection,insection->name));
       DPRINT(5,("Symbol for this reloc is %lx(%s)\n",sym_p,sym_p->name));
       /* Is reloc relative to a special section? */
-      if ((insection == bfd_abs_section_ptr) ||
-	  (insection == bfd_com_section_ptr) ||
-	  (insection == bfd_und_section_ptr) ||
-	  (insection == bfd_ind_section_ptr))
+      if (bfd_is_bfd_section(insection))
 	continue; /* Nothing to do, since this translates to HUNK_EXT */
 
       r->addend += sym_p->value; /* Add offset of symbol from section start */
@@ -1911,10 +1910,7 @@ amiga_write_section_contents (abfd, section, data_sec, datadata_relocs,
 	  sym_p = *(r->sym_ptr_ptr); /* The symbol for this section */
 	  insection = sym_p->section;
 	  /* Is reloc relative to a special section? */
-	  if ((insection == bfd_abs_section_ptr) ||
-	      (insection == bfd_com_section_ptr) ||
-	      (insection == bfd_und_section_ptr) ||
-	      (insection == bfd_ind_section_ptr))
+	  if (bfd_is_bfd_section(insection))
 	    continue; /* Nothing to do, since this translates to HUNK_EXT */
 
 	  if (insection->output_section == data_sec)
@@ -1963,10 +1959,7 @@ amiga_write_section_contents (abfd, section, data_sec, datadata_relocs,
 	    sym_p = *(r->sym_ptr_ptr); /* The symbol for this section */
 	    insection = sym_p->section;
 	    /* Is reloc relative to a special section? */
-	    if ((insection == bfd_abs_section_ptr) ||
-		(insection == bfd_com_section_ptr) ||
-		(insection == bfd_und_section_ptr) ||
-		(insection == bfd_ind_section_ptr))
+	    if (bfd_is_bfd_section(insection))
 	      continue; /* Nothing to do, since this translates to HUNK_EXT */
 #if 0
 	    /* Determine which hunk to write, and index of target */
@@ -2054,7 +2047,7 @@ amiga_write_symbols (abfd, section)
 
       DPRINT(5,("Symbol is %s, section is %lx(%s)\n",sym_p->name,osection,osection->name));
 
-      if (osection!=bfd_com_section_ptr) /* Not common symbol */
+      if (!bfd_is_com_section(osection)) /* Not common symbol */
 	{
 	  DPRINT(5,("Non common ref\n"));
 	  if ((symbol_count++)==0) /* First write out the HUNK_EXT */
@@ -2184,13 +2177,13 @@ amiga_write_symbols (abfd, section)
       if (osection==NULL) /* FIXME: Happens with constructor functions. */
 	continue;
 
-      if ((osection==bfd_und_section_ptr)
-	/*||(osection==bfd_com_section_ptr)*/
-	  ||(osection==bfd_ind_section_ptr))
+      if (bfd_is_und_section(osection)
+	/*||bfd_is_com_section(osection)*/
+	  ||bfd_is_ind_section(osection))
 	continue; /* Don't write these */
 
       /* Only write abs defs, if not writing a Loadfile */
-      if ((osection==bfd_abs_section_ptr)&&(section->index==0)&&
+      if (bfd_is_abs_section(osection)&&(section->index==0)&&
 	  !AMIGA_DATA(abfd)->IsLoadFile)
 	{
 	  DPRINT(5,("Abs symbol\n"));
@@ -2212,7 +2205,7 @@ amiga_write_symbols (abfd, section)
 	    return FALSE;
 	  continue;
 	}/* Of abs def */
-      if (osection==bfd_abs_section_ptr)
+      if (bfd_is_abs_section(osection))
 	continue; /* Not first hunk, already written */
 
       /* If it is a warning symbol, or a constructor symbol or a
@@ -2243,7 +2236,7 @@ amiga_write_symbols (abfd, section)
       else
 	{
 	  /* write common definitions as bss common references */
-	  if (osection->output_section == bfd_com_section_ptr &&
+	  if (bfd_is_com_section(osection->output_section) &&
 	      section->index == 2)
 	    {
 	      if ((symbol_count++)==0) /* First write out the header */
@@ -2458,7 +2451,7 @@ amiga_get_symbol_info (ignore_abfd, symbol, ret)
   bfd_symbol_info (symbol, ret);
   if (symbol->name[0] == ' ')
     ret->name = "* empty table entry ";
-  if (symbol->section==bfd_abs_section_ptr)
+  if (bfd_is_abs_section(symbol->section))
     ret->type = (symbol->flags & BSF_LOCAL) ? 'a' : 'A';
 }
 

@@ -450,7 +450,7 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
 
   target_section=sym->section;
 
-  if (target_section==bfd_und_section_ptr) /* Error */
+  if (bfd_is_und_section(target_section)) /* Error */
     {
       DPRINT(10,("amiga_perf_reloc: target_sec==UND\n"));
       return bfd_reloc_undefined;
@@ -463,9 +463,9 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
     case H_ABS32:
       DPRINT(5,("ABSRELOC32\n"));
       size-=H_ABS8;
-      if (target_section==bfd_abs_section_ptr) /* Ref to absolute hunk */
+      if (bfd_is_abs_section(target_section)) /* Ref to absolute hunk */
 	relocation=sym->value;
-      else if (target_section==bfd_com_section_ptr) /* ref to common */
+      else if (bfd_is_com_section(target_section)) /* ref to common */
 	{
 	  relocation=0;
 	  copy=TRUE;
@@ -501,9 +501,9 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
     case H_PC32:
       DPRINT(5,("RELRELOC\n"));
       size-=H_PC8;
-      if (target_section==bfd_abs_section_ptr) /* Ref to absolute hunk */
+      if (bfd_is_abs_section(target_section)) /* Ref to absolute hunk */
 	relocation=sym->value;
-      else if (target_section==bfd_com_section_ptr) /* Error.. */
+      else if (bfd_is_com_section(target_section)) /* Error.. */
 	{
 	  ret=bfd_reloc_undefined;
 	}
@@ -529,7 +529,7 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
 	 since .bss section contains only COMMON sections...... and should
 	 be following .data section.. */
       size-=H_SD8;
-      if (target_section==bfd_abs_section_ptr)
+      if (bfd_is_abs_section(target_section))
 	relocation=sym->value;
       else if (!AMIGA_DATA(target_section->output_section->owner)->baserel)
 	{
@@ -617,7 +617,7 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
   sym=*(r->sym_ptr_ptr);
   target_section=sym->section;
 
-  if (target_section==bfd_und_section_ptr) /* Error */
+  if (bfd_is_und_section(target_section)) /* Error */
     {
       DPRINT(10,("aout_perf_reloc: target_sec==UND\n"));
       return bfd_reloc_undefined;
@@ -631,9 +631,9 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
     case H_ABS16:
       DPRINT(10,("8/16 bit\n"));
       size-=H_ABS8;
-      if (target_section==bfd_abs_section_ptr) /* Ref to absolute hunk */
+      if (bfd_is_abs_section(target_section)) /* Ref to absolute hunk */
 	relocation=sym->value;
-      else if (target_section==bfd_com_section_ptr) /* Error.. */
+      else if (bfd_is_com_section(target_section)) /* Error.. */
 	{
 	  bfd_msg ("pc relative relocation to common symbol \"%s\" in "
 		   "section %s\n",sym->name,sec->name);
@@ -664,9 +664,9 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
     case H_ABS32: /* 32 bit reloc, pc relative or absolute */
       DPRINT(10,("32 bit\n"));
       size-=H_ABS8;
-      if (target_section==bfd_abs_section_ptr) /* Ref to absolute hunk */
+      if (bfd_is_abs_section(target_section)) /* Ref to absolute hunk */
 	relocation=sym->value;
-      else if (target_section==bfd_com_section_ptr) /* ref to common */
+      else if (bfd_is_com_section(target_section)) /* ref to common */
 	{
 	  relocation=0;
 	  copy=TRUE;
@@ -705,7 +705,8 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
     case H_PC16:
     case H_PC32:
       size-=H_PC8;
-      if (target_section == bfd_abs_section_ptr) /* Ref to absolute hunk */
+      DPRINT(10,("8/16/32 bit pcrel: size=%d\n", size));
+      if (bfd_is_abs_section(target_section)) /* Ref to absolute hunk */
 	relocation=sym->value;
       else
 	{
@@ -724,9 +725,9 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
       size-=H_SD8;
     baserel:
       /* We use the symbol ___a4_init as base */
-      if (target_section==bfd_abs_section_ptr)
+      if (bfd_is_abs_section(target_section))
 	relocation=sym->value;
-      else if (target_section==bfd_com_section_ptr) /* Error.. */
+      else if (bfd_is_com_section(target_section)) /* Error.. */
 	{
 	  bfd_msg ("baserelative relocation to common \"%s\"\n",sym->name);
 	  DPRINT(10,("Ref to common symbol...aout_perf_reloc\n"));
