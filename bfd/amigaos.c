@@ -2006,7 +2006,7 @@ amiga_write_symbols (abfd, section)
   asymbol *sym_p;
   arelent *r;
   unsigned long n[3],symbol_header,type;
-  unsigned int i,symbol_count;
+  unsigned int i,j,idx,ncnt,symbol_count;
 
   /* If base rel linking and section is .bss ==> exit */
   if (amiga_base_relative && !strcmp(section->name,".bss"))
@@ -2020,21 +2020,16 @@ amiga_write_symbols (abfd, section)
       return write_longs (n, 1, abfd);
     }
 
-  symbol_count=0;
-  symbol_header=HUNK_EXT;
-
-  /* If this is Loadfile, then do not write HUNK_EXT, but rather HUNK_SYMB */
+  /* If this is Loadfile, then do not write HUNK_EXT, but rather HUNK_SYMBOL */
+  symbol_header = AMIGA_DATA(abfd)->IsLoadFile ? HUNK_SYMBOL : HUNK_EXT;
 
   /* Write out all the symbol definitions, then HUNK_END
 
      Now, first traverse the relocs, all entries that are non NULL
      have to be taken into account */
+  symbol_count = 0;
 
-  /* Determine the type of HUNK_EXT to issue and build a single
-     HUNK_EXT subtype */
-
-  /* FIXME: We write out many HUNK_EXT's entries for references to the
-    same symbol.. */
+  DPRINT(10,("Traversing relocation table\n"));
   for (i=0;i<section->reloc_count;i++)
     {
       r=section->orelocation[i];
@@ -2047,15 +2042,27 @@ amiga_write_symbols (abfd, section)
 
       DPRINT(5,("Symbol is %s, section is %lx(%s)\n",sym_p->name,osection,osection->name));
 
+      /* group together relocations referring to the same symbol and howto */
+      for(idx=i,j=i+1;j<section->reloc_count;j++)
+	{
+	  arelent *rj=section->orelocation[j];
+	  if (rj==NULL || sym_p!=*(rj->sym_ptr_ptr) || r->howto!=rj->howto)
+	    continue; /* no match */
+	  if (++i == j)
+	    continue; /* adjacent */
+	  section->orelocation[j] = section->orelocation[i];
+	  section->orelocation[i] = rj;
+	}
+
+      if ((symbol_count++)==0) /* First write out the HUNK_EXT */
+	{
+	  if (!write_longs (&symbol_header, 1, abfd))
+	    return FALSE;
+	}
+
       if (!bfd_is_com_section(osection)) /* Not common symbol */
 	{
 	  DPRINT(5,("Non common ref\n"));
-	  if ((symbol_count++)==0) /* First write out the HUNK_EXT */
-	    {
-	      if (!write_longs (&symbol_header, 1, abfd))
-		return FALSE;
-	    }
-
 	  /* Determine type of ref */
 	  switch (r->howto->type)
 	    {
@@ -2100,24 +2107,11 @@ amiga_write_symbols (abfd, section)
 	      return FALSE;
 	      break;
 	    }/* Of switch */
-
-	  DPRINT(5,("Type is %lx\n",type));
-	  if (!write_name (abfd, sym_p->name, type << 24))
-	    return FALSE;
-	  n[0]=1; /* 1 ref at address... */
-	  n[1]=r->address;
-	  if (!write_longs (n, 2, abfd))
-	    return FALSE;
+	  ncnt=0;
 	}/* Of is ref to undefined or abs symbol */
       else /* ref to common symbol */
 	{
 	  DPRINT(5,("Common ref\n"));
-	  if ((symbol_count++)==0) /* First write out the HUNK_EXT */
-	    {
-	      if (!write_longs (&symbol_header, 1, abfd))
-		return FALSE;
-	    }
-
 	  switch (r->howto->type)
 	    {
 	    default:
@@ -2139,22 +2133,28 @@ amiga_write_symbols (abfd, section)
 	      type=EXT_DEXT32COMMON;
 	      break;
 	    }/* Of switch */
-
-	  DPRINT(5,("Type is %lx\n",type));
-	  if (!write_name (abfd, sym_p->name, type << 24))
-	    return FALSE;
 	  n[0]=sym_p->value; /* Size of common block */
-	  n[1]=1; /* 1 ref at address... */
-	  n[2]=r->address;
-	  if (!write_longs (n, 3, abfd))
-	    return FALSE;
+	  ncnt=1;
 	}/* Of is common section */
+
+	DPRINT(5,("Type is %lx\n",type));
+	if (!write_name (abfd, sym_p->name, type << 24))
+	  return FALSE;
+	n[ncnt]=i-idx+1; /* refs for symbol... */
+	if (!write_longs (n, ncnt+1, abfd))
+	  return FALSE;
+	for(;idx<=i;++idx)
+	  {
+	    n[0]=section->orelocation[idx]->address;
+	    if (!write_longs (n, 1, abfd))
+	      return FALSE;
+	  }
     }/* Of traverse relocs */
 
   /* Now traverse the symbol table and write out all definitions, that are relative
-     to this hunk */
-  /* Absolute defs are always only written out with the first hunk */
-  /* Don't write out:
+     to this hunk.
+     Absolute defs are always only written out with the first hunk.
+     Don't write out:
 	local symbols
 	undefined symbols
 	indirect symbols
@@ -2165,7 +2165,6 @@ amiga_write_symbols (abfd, section)
      since they are unrepresentable in HUNK format.. */
 
   DPRINT(10,("Traversing symbol table\n"));
-  symbol_header=(AMIGA_DATA(abfd)->IsLoadFile)?HUNK_SYMBOL:HUNK_EXT;
   for (i=0;i<abfd->symcount;i++)
     {
       sym_p=abfd->outsymbols[i];
