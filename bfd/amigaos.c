@@ -1247,7 +1247,7 @@ determine_datadata_relocs (abfd, section)
       arelent *r=section->orelocation[i];
       if (r == NULL)
 	continue;
-      sym_p=*(r->sym_ptr_ptr); /* The symbol for this section */
+      sym_p=*(r->sym_ptr_ptr); /* The symbol for this relocation */
       insection=sym_p->section;
 
       /* Is reloc relative to a special section? */
@@ -1805,7 +1805,7 @@ amiga_write_section_contents (abfd, section, data_sec, datadata_relocs,
       if (r == NULL)
 	continue;
 
-      sym_p = *(r->sym_ptr_ptr); /* The symbol for this section */
+      sym_p = *(r->sym_ptr_ptr); /* The symbol for this relocation */
       insection = sym_p->section;
       DPRINT(5,("Sec for reloc is %lx(%s)\n",insection,insection->name));
       DPRINT(5,("Symbol for this reloc is %lx(%s)\n",sym_p,sym_p->name));
@@ -1907,7 +1907,7 @@ amiga_write_section_contents (abfd, section, data_sec, datadata_relocs,
 	  if (r == NULL)
 	    continue;
 
-	  sym_p = *(r->sym_ptr_ptr); /* The symbol for this section */
+	  sym_p = *(r->sym_ptr_ptr); /* The symbol for this relocation */
 	  insection = sym_p->section;
 	  /* Is reloc relative to a special section? */
 	  if (bfd_is_bfd_section(insection))
@@ -1956,7 +1956,7 @@ amiga_write_section_contents (abfd, section, data_sec, datadata_relocs,
 	    if (r == NULL) /* already written */
 	      continue;
 
-	    sym_p = *(r->sym_ptr_ptr); /* The symbol for this section */
+	    sym_p = *(r->sym_ptr_ptr); /* The symbol for this relocation */
 	    insection = sym_p->section;
 	    /* Is reloc relative to a special section? */
 	    if (bfd_is_bfd_section(insection))
@@ -2041,7 +2041,7 @@ amiga_write_symbols (abfd, section)
       if (r==NULL)
 	continue;
 
-      sym_p=*(r->sym_ptr_ptr); /* The symbol for this section */
+      sym_p=*(r->sym_ptr_ptr); /* The symbol for this relocation */
       osection=sym_p->section; /* The section the symbol belongs to */
       /* this section MUST be a special section */
 
