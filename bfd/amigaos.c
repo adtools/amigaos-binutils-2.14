@@ -1174,6 +1174,12 @@ amiga_handle_rest (abfd, current_section, isload)
 	  break;
 
 	default: /* error */
+	  bfd_seek (abfd, -4, SEEK_CUR);
+	  bfd_msg ("missing HUNK_END: unexpected hunktype %ld(0x%lx) at offset 0x%lx",
+		   hunk_type, hunk_type, bfd_tell (abfd));
+	  hunk_type = HUNK_VALUE(hunk_type);
+	  if (hunk_type == HUNK_CODE || hunk_type == HUNK_DATA || hunk_type == HUNK_BSS)
+	    return TRUE;
 	  bfd_set_error (bfd_error_wrong_format);
 	  return FALSE;
 	  break;
