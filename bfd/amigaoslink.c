@@ -477,7 +477,7 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
 	  /* This is done through a change to the output section of
 	     the symbol.. */
 	  if (amiga_base_relative
-	      && !strcmp(sym->section->output_section->name,".bss"))
+	      && !strcmp(target_section->output_section->name,".bss"))
 	    {
 	      /* get value for .data section */
 	      bfd *ibfd;
@@ -487,8 +487,8 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
 	      for (s=ibfd->sections;s!=NULL;s=s->next)
 		if (!strcmp(s->name,".data"))
 		  {
-		    sym->section->output_offset=s->_raw_size;
-		    sym->section->output_section=s;
+		    target_section->output_offset=s->_raw_size;
+		    target_section->output_section=s;
 		  }
 	    }
 	  relocation=0;
@@ -550,12 +550,12 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
 	      for (s=ibfd->sections;s!=NULL;s=s->next)
 		if (!strcmp(s->name,".data"))
 		  {
-		    sym->section->output_offset=s->_raw_size;
-		    sym->section->output_section=s;
+		    target_section->output_offset=s->_raw_size;
+		    target_section->output_section=s;
 		  }
 	    }
 
-	  relocation = sym->value + sym->section->output_offset
+	  relocation = sym->value + target_section->output_offset
 	    - (AMIGA_DATA(target_section->output_section->owner))->a4init
 	    + r->addend;
 	  copy=FALSE;
@@ -678,7 +678,7 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
 	  /* This is done through a change to the output section of
 	     the symbol.. */
 	  if (amiga_base_relative
-	      && !strcmp(sym->section->output_section->name,".bss"))
+	      && !strcmp(target_section->output_section->name,".bss"))
 	    {
 	      /* get value for .data section */
 	      bfd *ibfd;
@@ -688,8 +688,8 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
 	      for (s=ibfd->sections;s!=NULL;s=s->next)
 		if (!strcmp(s->name,".data"))
 		  {
-		    sym->section->output_offset+=s->_raw_size;
-		    sym->section->output_section=s;
+		    target_section->output_offset+=s->_raw_size;
+		    target_section->output_section=s;
 		  }
 	    }
 	  relocation=0;
@@ -751,8 +751,8 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
 	      for (s=ibfd->sections;s!=NULL;s=s->next)
 		if (!strcmp(s->name,".data"))
 		  {
-		    sym->section->output_offset+=s->_raw_size;
-		    sym->section->output_section=s;
+		    target_section->output_offset+=s->_raw_size;
+		    target_section->output_section=s;
 		  }
 	    }
 
@@ -768,8 +768,8 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
 
 	  DPRINT(20,("symbol=%s (0x%lx)\nsection %s (0x%lx; %s; output=0x%lx)"
 		     "\nrelocation @0x%lx\n", sym->name, sym->value,
-		     sym->section->name, sym->section,
-		     sym->section->owner->filename, sym->section->output_offset,
+		     target_section->name, target_section,
+		     target_section->owner->filename, target_section->output_offset,
 		     r->address));
 	}
       DPRINT(10,("target->out=%s(%lx), sec->out=%s(%lx), symbol=%s\n",
