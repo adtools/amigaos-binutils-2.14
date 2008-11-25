@@ -146,6 +146,7 @@ typedef struct amiga_ardata_struct {
   unsigned long filesize;
   struct arch_syms *defsyms;
   unsigned long defsym_count;
+  unsigned long outnum;
 } amiga_ardata_type;
 
 #define amiga_ardata(bfd) (*(amiga_ardata_type **)(void *)&(bfd)->tdata.aout_ar_data)
@@ -3011,7 +3012,7 @@ amiga_read_ar_hdr (abfd)
 {
   struct areltdata *ared;
   unsigned long start_pos,len;
-  char buf[8];
+  char buf[8],*base,*name;
 
   start_pos = bfd_tell (abfd);
   if (start_pos >= amiga_ardata(abfd)->filesize) {
@@ -3033,16 +3034,32 @@ amiga_read_ar_hdr (abfd)
     return NULL;
 
   len = GL (&buf[4]) << 2;
-  if (len) {
-    ared->filename = bfd_alloc (abfd, len+1);
-    if (ared->filename == NULL)
-      return NULL;
-    if (bfd_bread (ared->filename, len, abfd) != len)
-      return NULL;
-    ared->filename[len] = '\0';
+
+  ared->filename = bfd_alloc (abfd, len+1 > 16 ? len+1 : 16);
+  if (ared->filename == NULL)
+    return NULL;
+
+  switch (len) {
+    default:
+      if (bfd_bread (ared->filename, len, abfd) != len)
+	return NULL;
+      ared->filename[len] = '\0';
+      /* strip path part */
+      base = strchr (name = ared->filename, ':');
+      if (base != NULL)
+	name = base + 1;
+      for (base = name; *name; ++name)
+	if (*name == '/')
+	  base = name + 1;
+      if (*base != '\0') {
+	ared->filename = base;
+	break;
+      }
+      /* Fall through */
+    case 0: /* fake a name */
+      sprintf (ared->filename, "obj-%08lu.o", ++amiga_ardata(abfd)->outnum);
+      break;
   }
-  else
-    ared->filename = "(no name)";
 
   if (bfd_seek (abfd, start_pos+4, SEEK_SET))
     return NULL;
