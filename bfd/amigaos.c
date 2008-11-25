@@ -332,7 +332,7 @@ amiga_object_p (abfd)
     }
 
   /* Set default architecture to m68k:68000.  */
-  /* So we can link on 68000 AMIGAs..... */
+  /* So we can link on 68000 AMIGAs... */
   abfd->arch_info = bfd_scan_arch ("m68k:68000");
 
   return abfd->xvec;
@@ -723,7 +723,7 @@ amiga_read_unit (abfd, size)
 	  break;
 
 	default:
-	  /* Something very nasty happened: invalid hunk occured.... */
+	  /* Something very nasty happened: invalid hunk occured... */
 	  bfd_set_error (bfd_error_wrong_format);
 	  return FALSE;
 	  break;
@@ -1440,7 +1440,7 @@ amiga_write_object_contents (abfd)
 	  for (i = 0; i < abfd->symcount; i++)
 	    {
 	      sym = abfd->outsymbols[i];
-	      /* NULL entries have been written already.... */
+	      /* NULL entries have been written already... */
 	      if (CAN_WRITE_OUTSYM (sym))
 	        {
 		  str_size += strlen(sym->name) + 1;
@@ -1476,7 +1476,7 @@ amiga_write_object_contents (abfd)
 	      return TRUE;
 	    }
 
-	  /* Write out HUNK_DEBUG, size, ZMAGIC, .... */
+	  /* Write out HUNK_DEBUG, size, ZMAGIC, ... */
 	  n[0] = HUNK_DEBUG;
 	  n[1] = 3 + ((symbols * sizeof(struct internal_nlist) + str_size + 3) >> 2);
 	  n[2] = ZMAGIC; /* Magic number */
@@ -1503,7 +1503,7 @@ amiga_write_object_contents (abfd)
 		    }
 		  bfd_h_put_32(abfd, offset, &data.e_strx[0]); /* Store index */
 		  offset += strlen(sym->name) + 1;
-		  if (bfd_bwrite ((PTR)&data,sizeof(data),abfd)
+		  if (bfd_bwrite ((PTR)&data, sizeof(data), abfd)
 		      != sizeof(data))
 		    return FALSE;
 		}
@@ -1692,7 +1692,7 @@ amiga_write_section_contents (abfd, section, data_sec, datadata_relocs,
   char *c_p;
   long *reloc_counts;
 
-  DPRINT(5,("Entering write-section-conts\n"));
+  DPRINT(5,("Entering write_section_contents\n"));
 
   /* If we are base-relative linking and the section is .bss and abfd
      is a load file, then return */
@@ -1867,13 +1867,13 @@ amiga_write_section_contents (abfd, section, data_sec, datadata_relocs,
   /* Write the section contents */
   if (amiga_per_section(section)->disk_size != 0)
     {
-      if (bfd_bwrite((PTR)section->contents,
-		    amiga_per_section(section)->disk_size, abfd) !=
+      if (bfd_bwrite ((PTR)section->contents,
+		      amiga_per_section(section)->disk_size, abfd) !=
 	  amiga_per_section(section)->disk_size)
 	return FALSE;
 
       /* pad the section on disk if necessary (to a long boundary) */
-      pad = (4-(amiga_per_section(section)->disk_size & 3)) & 3;
+      pad = (4 - (amiga_per_section(section)->disk_size & 3)) & 3;
       if (pad && (bfd_bwrite ((PTR)&zero, pad, abfd) != pad))
 	return FALSE;
     }
@@ -2980,7 +2980,7 @@ amiga_openr_next_archived_file (archive, last_file)
   file_ptr filestart;
 
   if (!last_file)
-    filestart = bfd_ardata(archive)->first_file_filepos;
+    filestart = bfd_ardata (archive)->first_file_filepos;
   else
     {
       unsigned int size = arelt_size (last_file);
@@ -2988,6 +2988,7 @@ amiga_openr_next_archived_file (archive, last_file)
       filestart = last_file->origin + size;
       filestart += filestart % 2;
     }
+
   return _bfd_get_elt_at_filepos (archive, filestart);
 }
 
