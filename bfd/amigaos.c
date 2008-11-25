@@ -180,13 +180,13 @@ static bfd_boolean write_longs PARAMS ((const unsigned long *, unsigned long,
 static long determine_datadata_relocs PARAMS ((bfd *, sec_ptr));
 static void remove_section_index PARAMS ((sec_ptr, int *));
 static bfd_boolean amiga_write_object_contents PARAMS ((bfd *));
-static bfd_boolean write_name PARAMS ((bfd *, const char *, long));
+static bfd_boolean write_name PARAMS ((bfd *, const char *, unsigned long));
 static bfd_boolean amiga_write_archive_contents PARAMS ((bfd *));
 static bfd_boolean amiga_write_armap PARAMS ((bfd *, unsigned int,
 	struct orl *, unsigned int, int));
 static int determine_type PARAMS ((arelent *));
 static bfd_boolean amiga_write_section_contents PARAMS ((bfd *, sec_ptr,
-	sec_ptr, long, int *, int));
+	sec_ptr, unsigned long, int *, int));
 static bfd_boolean amiga_write_symbols PARAMS ((bfd *, sec_ptr));
 static bfd_boolean amiga_get_section_contents PARAMS ((bfd *, sec_ptr, PTR,
 	file_ptr, bfd_size_type));
@@ -1558,7 +1558,7 @@ static bfd_boolean
 write_name (abfd, name, value)
      bfd *abfd;
      const char *name;
-     long value;
+     unsigned long value;
 {
   struct name {
     long len;
@@ -1693,7 +1693,7 @@ amiga_write_section_contents (abfd, section, data_sec, datadata_relocs,
      bfd *abfd;
      sec_ptr section;
      sec_ptr data_sec;
-     long datadata_relocs;
+     unsigned long datadata_relocs;
      int *index_map;
      int max_hunk;
 {
