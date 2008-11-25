@@ -619,8 +619,12 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
 
   if (bfd_is_und_section(target_section)) /* Error */
     {
-      DPRINT(10,("aout_perf_reloc: target_sec==UND\n"));
-      return bfd_reloc_undefined;
+      if ((sym->flags & BSF_WEAK) == 0)
+        {
+	  DPRINT(10,("aout_perf_reloc: target_sec==UND\n"));
+	  return bfd_reloc_undefined;
+	}
+      target_section=bfd_abs_section_ptr;
     }
 
   relocation=0; sign=FALSE; copy=FALSE; ret=bfd_reloc_ok;
