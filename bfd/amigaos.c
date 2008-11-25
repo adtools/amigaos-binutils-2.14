@@ -156,8 +156,8 @@ typedef struct amiga_ardata_struct {
 #define GW(x) bfd_get_16 (abfd, (bfd_byte *) (x))
 #define LONGSIZE(l) (((l)+3) >> 2)
 
-/* AmigaOS doesn't like symbols names longer than 124 characters */
-#define MAX_NAME_SIZE 124
+/* AmigaOS doesn't like symbol names longer than 124 characters */
+#define MAX_NAME_SIZE 0
 
 static bfd_boolean get_long PARAMS ((bfd *, unsigned long *));
 static const struct bfd_target *amiga_object_p PARAMS ((bfd *));
@@ -1560,23 +1560,20 @@ write_name (abfd, name, value)
      const char *name;
      unsigned long value;
 {
-  struct name {
-    long len;
-    char buf[MAX_NAME_SIZE+3];
-  } n;
-  long i,j;
+  unsigned long n[1];
+  size_t l;
 
-  j = strlen (name);
-  if (j > MAX_NAME_SIZE)
-    j = MAX_NAME_SIZE;
-  strncpy (n.buf, name, j);
-  i = LONGSIZE (j) | value;
-  n.len = GL (&i);
-  if (j&3) {
-    n.buf[j] = n.buf[j+1] = n.buf[j+2] = '\0';
-    j += (4-(j&3))&3;
-  }
-  return (bfd_bwrite ((PTR)&n, sizeof(long)+j, abfd) == sizeof(long)+j);
+  l = strlen (name);
+  if (MAX_NAME_SIZE && l > MAX_NAME_SIZE)
+    l = MAX_NAME_SIZE;
+  n[0] = (LONGSIZE (l) | value);
+  if (!write_longs (n, 1, abfd))
+    return FALSE;
+  if (bfd_bwrite (name, l, abfd) != l)
+    return FALSE;
+  n[0] = 0;
+  l = (4 - (l & 3)) & 3;
+  return (l && bfd_bwrite ((PTR)n, l, abfd) != l ? FALSE : TRUE);
 }
 
 static bfd_boolean
