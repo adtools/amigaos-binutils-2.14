@@ -1529,15 +1529,15 @@ amiga_write_object_contents (abfd)
 		  size_t len = strlen(sym->name) + 1;
 
 	          /* Write string tab */
-	          if (bfd_bwrite((PTR)sym->name,len,abfd)!=len)
+	          if (bfd_bwrite (sym->name, len, abfd) != len)
 	            return FALSE;
 		}
 	    }
 
-	  i = ((str_size + 3) & (~3)) - str_size;
-	  n[0] = 0;
 	  /* Write padding */
-	  if (i && bfd_bwrite((PTR)n,i,abfd)!=i)
+	  n[0] = 0;
+	  i = (4 - (str_size & 3)) & 3;
+	  if (i && bfd_bwrite ((PTR)n, i, abfd) != i)
 	    return FALSE;
 
 	  /* write a HUNK_END here to finish the loadfile, or AmigaOS
@@ -2226,7 +2226,7 @@ amiga_write_symbols (abfd, section)
 		return FALSE;
 	    }
 
-	  type=((symbol_header==HUNK_EXT?EXT_DEF:0)<<24)&0xff000000;
+	  type = symbol_header == HUNK_EXT ? EXT_DEF << 24 : 0;
 	  if (!write_name (abfd, sym_p->name, type))
 	    return FALSE;
 	  n[0] = sym_p->value + sym_p->section->output_offset;
@@ -2245,7 +2245,7 @@ amiga_write_symbols (abfd, section)
 		    return FALSE;
 		}
 
-	      if (!write_name (abfd, sym_p->name, EXT_ABSCOMMON<<24))
+	      if (!write_name (abfd, sym_p->name, EXT_ABSCOMMON << 24))
 		return FALSE;
 	      n[0]=sym_p->value;
 	      n[1]=0;
