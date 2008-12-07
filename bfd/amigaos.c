@@ -1385,7 +1385,7 @@ amiga_write_object_contents (abfd)
       if (!write_longs (n, 1, abfd) || !write_name (abfd, abfd->filename, 0))
 	return FALSE;
 
-      for (i=0;i<abfd->symcount;i++) {
+      for (i=0;i<bfd_get_symcount (abfd);i++) {
 	asymbol *sym_p=abfd->outsymbols[i];
 	sec_ptr osection=sym_p->section;
 	if (!osection || !bfd_is_com_section(osection->output_section))
@@ -1437,7 +1437,7 @@ amiga_write_object_contents (abfd)
       sec_ptr s;
 
       /* We have to convert all the symbols in abfd to a.out style... */
-      if (abfd->symcount)
+      if (bfd_get_symcount (abfd))
 	{
 #define CAN_WRITE_OUTSYM(sym) (sym!=NULL && sym->section && \
 				((sym->section->owner && \
@@ -1446,7 +1446,7 @@ amiga_write_object_contents (abfd)
 				 bfd_asymbol_flavour (sym) == \
 				 bfd_target_aout_flavour))
 
-	  for (i = 0; i < abfd->symcount; i++)
+	  for (i = 0; i < bfd_get_symcount (abfd); i++)
 	    {
 	      sym = abfd->outsymbols[i];
 	      /* NULL entries have been written already... */
@@ -1495,7 +1495,7 @@ amiga_write_object_contents (abfd)
 	    return FALSE;
 
 	  /* Write out symbols */
-	  for (i = 0; i < abfd->symcount; i++) /* Translate every symbol */
+	  for (i = 0; i < bfd_get_symcount (abfd); i++) /* Translate every symbol */
 	    {
 	      sym = abfd->outsymbols[i];
 	      if (CAN_WRITE_OUTSYM (sym))
@@ -1522,7 +1522,7 @@ amiga_write_object_contents (abfd)
 	  if (!write_longs (&str_size, 1, abfd))
 	    return FALSE;
 
-	  for (i = 0; i < abfd->symcount; i++)
+	  for (i = 0; i < bfd_get_symcount (abfd); i++)
 	    {
 	      sym = abfd->outsymbols[i];
 	      if (CAN_WRITE_OUTSYM (sym))
@@ -1546,7 +1546,7 @@ amiga_write_object_contents (abfd)
 	  n[0] = HUNK_END;
 	  if (!write_longs (n, 1, abfd))
 	    return FALSE;
-	}/* Of if abfd->symcount */
+	}/* Of if bfd_get_symcount (abfd) */
     }/* Of write out debug hunk */
 
   bfd_release (abfd, index_map);
@@ -2010,7 +2010,7 @@ amiga_write_symbols (abfd, section)
   if (amiga_base_relative && !strcmp(section->name,".bss"))
     return TRUE;
 
-  if (section->reloc_count==0 && abfd->symcount==0)
+  if (section->reloc_count==0 && bfd_get_symcount (abfd)==0)
     {/* Write HUNK_END */
     alldone:
       DPRINT(5,("Leaving write_symbols\n"));
@@ -2163,7 +2163,7 @@ amiga_write_symbols (abfd, section)
      since they are unrepresentable in HUNK format.. */
 
   DPRINT(10,("Traversing symbol table\n"));
-  for (i=0;i<abfd->symcount;i++)
+  for (i=0;i<bfd_get_symcount (abfd);i++)
     {
       sym_p=abfd->outsymbols[i];
       osection=sym_p->section;
@@ -2316,11 +2316,11 @@ amiga_slurp_symbol_table (abfd)
   if (amiga_data->symbols)
     return TRUE; /* already read */
 
-  if (!abfd->symcount)
+  if (!bfd_get_symcount (abfd))
     return TRUE;
 
   asp = (amiga_symbol_type *) bfd_alloc (abfd, sizeof (amiga_symbol_type) *
-					 abfd->symcount);
+					 bfd_get_symcount (abfd));
   if ((amiga_data->symbols = asp) == NULL)
     return FALSE;
 
@@ -2406,7 +2406,7 @@ amiga_get_symtab_upper_bound (abfd)
 {
   if (!amiga_slurp_symbol_table (abfd))
     return -1;
-  return (abfd->symcount+1) * (sizeof (amiga_symbol_type *));
+  return (bfd_get_symcount (abfd)+1) * (sizeof (amiga_symbol_type *));
 }
 
 
@@ -2417,14 +2417,14 @@ amiga_get_symtab (abfd, location)
 {
   if(!amiga_slurp_symbol_table(abfd))
     return -1;
-  if (abfd->symcount)
+  if (bfd_get_symcount (abfd))
     {
       amiga_symbol_type *symp=AMIGA_DATA(abfd)->symbols;
       unsigned int i;
-      for (i = 0; i < abfd->symcount; i++, symp++)
+      for (i = 0; i < bfd_get_symcount (abfd); i++, symp++)
 	*location++ = &symp->symbol;
     }
-  return abfd->symcount;
+  return bfd_get_symcount (abfd);
 }
 
 
