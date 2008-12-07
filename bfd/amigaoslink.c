@@ -133,7 +133,7 @@ get_relocated_section_contents (abfd, link_info, link_order, data,
      bfd_boolean relocateable;
      asymbol **symbols;
 {
-  /* Get enough memory to hold the stuff */
+  /* Get enough memory to hold the stuff.  */
   bfd *input_bfd = link_order->u.indirect.section->owner;
   asection *input_section = link_order->u.indirect.section;
 
@@ -158,20 +158,20 @@ get_relocated_section_contents (abfd, link_info, link_order, data,
       goto error_return;
     }
 
-  reloc_vector = (arelent **) bfd_malloc ((size_t) reloc_size);
+  reloc_vector = (arelent **) bfd_malloc ((bfd_size_type) reloc_size);
   if (reloc_vector == NULL && reloc_size != 0)
     goto error_return;
 
   DPRINT(5,("GRSC: GetSecCont()\n"));
-  /* read in the section */
+  /* Read in the section.  */
   if (!bfd_get_section_contents (input_bfd,
 				 input_section,
 				 (PTR) data,
-				 0,
+				 (bfd_vma) 0,
 				 input_section->_raw_size))
     goto error_return;
 
-  /* We're not relaxing the section, so just copy the size info */
+  /* We're not relaxing the section, so just copy the size info.  */
   input_section->_cooked_size = input_section->_raw_size;
   input_section->reloc_done = TRUE;
 
@@ -208,7 +208,7 @@ get_relocated_section_contents (abfd, link_info, link_order, data,
 	      asection *os = input_section->output_section;
 
 	      DPRINT(5,("Keeping reloc\n"));
-	      /* A partial link, so keep the relocs */
+	      /* A partial link, so keep the relocs.  */
 	      os->orelocation[os->reloc_count] = *parent;
 	      os->reloc_count++;
 	    }
@@ -220,7 +220,8 @@ get_relocated_section_contents (abfd, link_info, link_order, data,
 		case bfd_reloc_undefined:
 		  if (!((*link_info->callbacks->undefined_symbol)
 			(link_info, bfd_asymbol_name (*(*parent)->sym_ptr_ptr),
-			 input_bfd, input_section, (*parent)->address, TRUE)))
+			 input_bfd, input_section, (*parent)->address,
+			 TRUE)))
 		    goto error_return;
 		  break;
 		case bfd_reloc_dangerous:
@@ -837,8 +838,8 @@ amiga_final_link (abfd, info)
   if (abfd->xvec->flavour == bfd_target_aout_flavour)
     return aout_amiga_final_link(abfd, info);
 
-  abfd->outsymbols = (asymbol **) NULL;
-  abfd->symcount = 0;
+  bfd_get_outsymbols (abfd) = (asymbol **) NULL;
+  bfd_get_symcount (abfd) = 0;
   outsymalloc = 0;
 
   /* Mark all sections which will be included in the output file.  */
@@ -931,7 +932,7 @@ amiga_final_link (abfd, info)
 				 input_bfd->filename, input_section->name));
 		      return FALSE;
 		    }
-		  relocs = (arelent **) bfd_malloc ((size_t) relsize);
+		  relocs = (arelent **) bfd_malloc ((bfd_size_type) relsize);
 		  if (!relocs && relsize != 0)
 		    return FALSE;
 		  symbols = _bfd_generic_link_get_symbols (input_bfd);
@@ -939,6 +940,7 @@ amiga_final_link (abfd, info)
 							input_section,
 							relocs,
 							symbols);
+		  free (relocs);
 		  if (reloc_count < 0)
 		    {
 		      DPRINT(10,("Relsize<0.II..in bfd %s, sec %s\n",
@@ -948,15 +950,15 @@ amiga_final_link (abfd, info)
 		  BFD_ASSERT ((unsigned long) reloc_count
 			      == input_section->reloc_count);
 		  o->reloc_count += reloc_count;
-		  free (relocs);
 		}
 	    }
 	  if (o->reloc_count > 0)
 	    {
-	      o->orelocation = ((arelent **)
-				bfd_alloc (abfd,
-					   (o->reloc_count
-					    * sizeof (arelent *))));
+	      bfd_size_type amt;
+
+	      amt = o->reloc_count;
+	      amt *= sizeof (arelent *);
+	      o->orelocation = (arelent **) bfd_alloc (abfd, amt);
 	      if (!o->orelocation)
 		return FALSE;
 	      /* o->flags |= SEC_RELOC; There may be no relocs. This can
@@ -1027,7 +1029,7 @@ amiga_reloc_link_order (abfd, info, sec, link_order)
     }
 
   /* We generate a new ***AMIGA*** style reloc */
-  r = (arelent *) bfd_zalloc (abfd, sizeof (amiga_reloc_type));
+  r = (arelent *) bfd_zalloc (abfd, (bfd_size_type) sizeof (amiga_reloc_type));
   if (r == (arelent *) NULL)
     {
       DPRINT(5,("Leaving amiga_reloc_link, no mem\n"));
@@ -1050,9 +1052,10 @@ amiga_reloc_link_order (abfd, info, sec, link_order)
     {
       struct generic_link_hash_entry *h;
 
-      h = _bfd_generic_link_hash_lookup (_bfd_generic_hash_table (info),
-					  link_order->u.reloc.p->u.name,
-					  FALSE, FALSE, TRUE);
+      h = ((struct generic_link_hash_entry *)
+	   bfd_wrapped_link_hash_lookup (abfd, info,
+					 link_order->u.reloc.p->u.name,
+					 FALSE, FALSE, TRUE));
       if (h == (struct generic_link_hash_entry *) NULL
 	  || ! h->written)
 	{
