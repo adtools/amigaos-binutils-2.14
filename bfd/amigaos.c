@@ -352,31 +352,17 @@ amiga_get_section_by_hunk_number (abfd, hunk_number)
   static bfd *last_bfd;
   sec_ptr p;
 
-  switch (hunk_number)
-    {
-    case -1:
-      return bfd_abs_section_ptr;
-      break;
-    case -2:
-      return bfd_und_section_ptr;
-      break;
-    case -3:
-      return bfd_com_section_ptr;
-      break;
-    default:
-      if (last_reference)
-	if (last_bfd == abfd && last_reference->target_index == hunk_number)
-	  return last_reference;
-      for (p = abfd->sections; p != NULL; p = p->next)
-	if (p->target_index == hunk_number)
-	  {
-	    last_reference = p;
-	    last_bfd = abfd;
-	    return p;
-	  }
-      BFD_FAIL ();
-      break;
-    }
+  if (last_reference)
+    if (last_bfd == abfd && last_reference->target_index == hunk_number)
+       return last_reference;
+  for (p = abfd->sections; p != NULL; p = p->next)
+    if (p->target_index == hunk_number)
+      {
+	last_reference = p;
+	last_bfd = abfd;
+	return p;
+      }
+  BFD_FAIL ();
   return NULL;
 }
 
@@ -2360,7 +2346,6 @@ amiga_slurp_symbol_table (abfd)
 	  case EXT_DEXT16COMMON:
 	  case EXT_DEXT8COMMON:
 	    asp->symbol.section = bfd_com_section_ptr;
-	    asp->hunk_number = -3;
 	    /* size of common block -> symbol's value */
 	    if (!get_long (abfd, &l))
 	      return FALSE;
@@ -2372,13 +2357,11 @@ amiga_slurp_symbol_table (abfd)
 	    break;
 	  case EXT_ABS: /* Absolute */
 	    asp->symbol.section = bfd_abs_section_ptr;
-	    asp->hunk_number = -1;
 	    goto rval;
 	    break;
 	  case EXT_DEF: /* Relative Definition */
 	  case EXT_SYMB: /* Same as EXT_DEF for load files */
 	    asp->symbol.section = section;
-	    asp->hunk_number = section->target_index;
 	  rval:
 	    /* read the value */
 	    if (!get_long (abfd, &l))
@@ -2387,7 +2370,6 @@ amiga_slurp_symbol_table (abfd)
 	    break;
 	  default: /* References to an undefined symbol */
 	    asp->symbol.section = bfd_und_section_ptr;
-	    asp->hunk_number = -2; /* undefined */
 	    asp->symbol.flags = 0;
 	    /* skip refs */
 	    if (!get_long (abfd, &l) || bfd_seek (abfd, l<<2, SEEK_CUR))

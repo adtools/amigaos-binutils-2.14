@@ -112,8 +112,7 @@ typedef struct amiga_symbol {
   char other;
   unsigned char type;
   /* amiga data */
-  long index,hunk_number;
-  unsigned long refnum;
+  unsigned long index,refnum;
 } amiga_symbol_type;
 
 /* We take the address of the first element of an asymbol to ensure that the
