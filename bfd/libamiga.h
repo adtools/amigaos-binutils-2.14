@@ -103,7 +103,6 @@ typedef struct amiga_reloc {
   arelent relent;
   struct amiga_reloc *next;
   asymbol *symbol;
-  long target_hunk;
 } amiga_reloc_type;
 
 typedef struct amiga_symbol {

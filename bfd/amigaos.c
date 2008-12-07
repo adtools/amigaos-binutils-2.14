@@ -406,7 +406,6 @@ amiga_add_reloc (abfd, section, offset, symbol, howto, target_hunk)
   }
   else
     reloc->symbol = &symbol->symbol;
-  reloc->target_hunk = target_hunk;
 
   return TRUE;
 }
@@ -2478,15 +2477,10 @@ amiga_print_symbol (abfd, afile,  symbol, how)
 
 static long
 amiga_get_reloc_upper_bound (abfd, asect)
-     bfd *abfd;
+     bfd *abfd ATTRIBUTE_UNUSED;
      sec_ptr asect;
 {
-  if (bfd_get_format (abfd) != bfd_object)
-    {
-      bfd_set_error (bfd_error_invalid_operation);
-      return 0;
-    }
-  return sizeof (arelent *) * (asect->reloc_count + 1);
+  return (asect->reloc_count + 1) * sizeof (arelent *);
 }
 
 
