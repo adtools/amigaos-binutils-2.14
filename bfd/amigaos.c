@@ -2319,8 +2319,8 @@ amiga_slurp_symbol_table (abfd)
   if (!bfd_get_symcount (abfd))
     return TRUE;
 
-  asp = (amiga_symbol_type *) bfd_alloc (abfd, sizeof (amiga_symbol_type) *
-					 bfd_get_symcount (abfd));
+  asp = (amiga_symbol_type *) bfd_zalloc (abfd, sizeof (amiga_symbol_type) *
+					  bfd_get_symcount (abfd));
   if ((amiga_data->symbols = asp) == NULL)
     return FALSE;
 
@@ -2415,7 +2415,7 @@ amiga_get_symtab (abfd, location)
      bfd *abfd;
      asymbol **location;
 {
-  if(!amiga_slurp_symbol_table(abfd))
+  if(!amiga_slurp_symbol_table (abfd))
     return -1;
   if (bfd_get_symcount (abfd))
     {
@@ -2423,6 +2423,7 @@ amiga_get_symtab (abfd, location)
       unsigned int i;
       for (i = 0; i < bfd_get_symcount (abfd); i++, symp++)
 	*location++ = &symp->symbol;
+      *location = 0;
     }
   return bfd_get_symcount (abfd);
 }
