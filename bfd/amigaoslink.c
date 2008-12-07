@@ -107,6 +107,8 @@ get_relocated_section_contents PARAMS ((bfd *, struct bfd_link_info *,
 	struct bfd_link_order *, bfd_byte *, bfd_boolean, asymbol **));
 bfd_boolean
 amiga_final_link PARAMS ((bfd *, struct bfd_link_info *));
+bfd_boolean
+aout_amiga_final_link PARAMS ((bfd *, struct bfd_link_info *));
 
 static bfd_reloc_status_type
 my_add_to PARAMS ((PTR, int, int, int, bfd_boolean));
@@ -148,10 +150,10 @@ get_relocated_section_contents (abfd, link_info, link_order, data,
   if (reloc_size < 0)
     goto error_return;
 
-  if (input_bfd->xvec->flavour==bfd_target_amiga_flavour)
-    reloc_func=amiga_perform_reloc;
-  else if (input_bfd->xvec->flavour==bfd_target_aout_flavour)
-    reloc_func=aout_perform_reloc;
+  if (bfd_get_flavour (input_bfd) == bfd_target_amiga_flavour)
+    reloc_func = amiga_perform_reloc;
+  else if (bfd_get_flavour (input_bfd) == bfd_target_aout_flavour)
+    reloc_func = aout_perform_reloc;
   else
     {
       bfd_set_error (bfd_error_bad_value);
@@ -426,8 +428,8 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
   bfd_boolean copy,sign;
   int relocation,size;
 
-  DPRINT(5,("Entering APR\nflavour is %d (aflavour=%d, aout_flavour=%d)\n",
-	    sec->owner->xvec->flavour, bfd_target_amiga_flavour,
+  DPRINT(5,("Entering APR\nflavour is %d (amiga_flavour=%d, aout_flavour=%d)\n",
+	    bfd_get_flavour (sec->owner), bfd_target_amiga_flavour,
 	    bfd_target_aout_flavour));
 
   /* If obfd==NULL: Apply the reloc, if possible. */
@@ -835,8 +837,8 @@ amiga_final_link (abfd, info)
 
   DPRINT(5,("Entering final_link\n"));
 
-  if (abfd->xvec->flavour == bfd_target_aout_flavour)
-    return aout_amiga_final_link(abfd, info);
+  if (bfd_get_flavour (abfd) == bfd_target_aout_flavour)
+    return aout_amiga_final_link (abfd, info);
 
   bfd_get_outsymbols (abfd) = (asymbol **) NULL;
   bfd_get_symcount (abfd) = 0;
@@ -882,7 +884,7 @@ amiga_final_link (abfd, info)
 	  if (!info->relocateable && amiga_base_relative &&
 	      !strcmp(o->name,".data"))
 	    {
-	      if (abfd->xvec->flavour!=bfd_target_amiga_flavour) /* oops */
+	      if (bfd_get_flavour(abfd)!=bfd_target_amiga_flavour) /* oops */
 		{
 		  bfd_msg ("You can't use base relative linking with "
 			   "partial links.\n");
@@ -1001,7 +1003,7 @@ amiga_final_link (abfd, info)
 	}
     }
 
-  if (abfd->xvec->flavour==bfd_target_amiga_flavour&&!info->relocateable)
+  if (bfd_get_flavour(abfd)==bfd_target_amiga_flavour&&!info->relocateable)
     AMIGA_DATA(abfd)->IsLoadFile = TRUE;
 
   DPRINT(10,("Leaving final_link\n"));
