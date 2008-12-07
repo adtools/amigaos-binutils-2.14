@@ -102,7 +102,7 @@ enum {
 typedef struct amiga_reloc {
   arelent relent;
   struct amiga_reloc *next;
-  struct amiga_symbol *symbol;
+  asymbol *symbol;
   long target_hunk;
 } amiga_reloc_type;
 

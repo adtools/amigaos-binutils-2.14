@@ -378,7 +378,7 @@ amiga_add_reloc (abfd, section, offset, symbol, howto, target_hunk)
   amiga_reloc_type *reloc;
   sec_ptr target_sec;
 
-  reloc = (amiga_reloc_type *) bfd_zalloc (abfd, sizeof (amiga_reloc_type));
+  reloc = (amiga_reloc_type *) bfd_alloc (abfd, sizeof (amiga_reloc_type));
   if (reloc == NULL)
     return FALSE;
 
@@ -390,21 +390,22 @@ amiga_add_reloc (abfd, section, offset, symbol, howto, target_hunk)
   else
     section->relocation = &reloc->relent;
   amiga_per_section(section)->reloc_tail = reloc;
-  reloc->next = NULL;
+
+  reloc->relent.sym_ptr_ptr = &reloc->symbol;
   reloc->relent.address = offset;
   reloc->relent.addend = 0;
   reloc->relent.howto = howto;
 
+  reloc->next = NULL;
   if (symbol==NULL) {		/* relative to section */
     target_sec = amiga_get_section_by_hunk_number (abfd, target_hunk);
     if (target_sec)
-      reloc->symbol = (amiga_symbol_type *) target_sec->symbol;
+      reloc->symbol = target_sec->symbol;
     else
       return FALSE;
   }
   else
-    reloc->symbol = symbol;
-  reloc->relent.sym_ptr_ptr = (asymbol **) (void *) &reloc->symbol;
+    reloc->symbol = &symbol->symbol;
   reloc->target_hunk = target_hunk;
 
   return TRUE;
