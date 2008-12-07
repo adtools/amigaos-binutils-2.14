@@ -2368,6 +2368,7 @@ amiga_slurp_symbol_table (abfd)
 	    /* skip refs */
 	    if (!get_long (abfd, &l) || bfd_seek (abfd, l<<2, SEEK_CUR))
 	      return FALSE;
+	    asp->refnum = l;
 	    break;
 	  case EXT_ABS: /* Absolute */
 	    asp->symbol.section = bfd_abs_section_ptr;
@@ -2391,6 +2392,7 @@ amiga_slurp_symbol_table (abfd)
 	    /* skip refs */
 	    if (!get_long (abfd, &l) || bfd_seek (abfd, l<<2, SEEK_CUR))
 	      return FALSE;
+	    asp->refnum = l;
 	    break;
 	  }
 	}
@@ -2468,9 +2470,8 @@ amiga_print_symbol (abfd, afile,  symbol, how)
     fprintf (file, "%s", symbol->name);
     break;
   case bfd_print_symbol_more:
-    fprintf (file, "%4x %2x %2x",
-	     (unsigned int)(amiga_symbol(symbol)->hunk_number&0xffff),
-	     (unsigned int)0,/* ->other */
+    fprintf (file, "%4lx %2x",
+	     amiga_symbol(symbol)->refnum,
 	     (unsigned int)amiga_symbol(symbol)->type);
     break;
   case bfd_print_symbol_all:
@@ -2481,10 +2482,9 @@ amiga_print_symbol (abfd, afile,  symbol, how)
     else
       {
 	bfd_print_symbol_vandf (abfd, (PTR)file, symbol);
-	fprintf (file, " %-10s %04x %02x %02x %s",
+	fprintf (file, " %-10s %04lx %02x %s",
 		 symbol->section->name,
-		 (unsigned int)(amiga_symbol(symbol)->hunk_number&0xffff),
-		 (unsigned int)0,/* ->other */
+		 amiga_symbol(symbol)->refnum,
 		 (unsigned int)amiga_symbol(symbol)->type,
 		 symbol->name);
       }
