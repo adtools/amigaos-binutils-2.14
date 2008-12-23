@@ -113,8 +113,6 @@ aout_amiga_final_link PARAMS ((bfd *, struct bfd_link_info *));
 static bfd_reloc_status_type
 my_add_to PARAMS ((PTR, int, int, int, bfd_boolean));
 static bfd_reloc_status_type
-my_set_to PARAMS ((PTR, int, int, int, bfd_boolean));
-static bfd_reloc_status_type
 amiga_perform_reloc PARAMS ((bfd *, arelent *, PTR, sec_ptr, bfd *, char **));
 static bfd_reloc_status_type
 aout_perform_reloc PARAMS ((bfd *, arelent *, PTR, sec_ptr, bfd *, char **));
@@ -338,80 +336,6 @@ my_add_to (data, offset, size, add, sign)
 }
 
 
-/* Set a value to a location */
-static bfd_reloc_status_type
-my_set_to (data, offset, size, val, sign)
-     PTR data;
-     int offset, size, val;
-     bfd_boolean sign;
-{
-  bfd_reloc_status_type ret=bfd_reloc_ok;
-  signed char *p=((signed char *)data)+offset;
-
-  DPRINT(5,("Entering set_value\n"));
-
-  switch (size)
-    {
-    case 0: /* byte size */
-      /* check for overflow */
-      if (sign) {
-	if (val<-0x80 || val>0x7f)
-	  ret = bfd_reloc_overflow;
-      }
-      else {
-	if ((val&0xffffff00)!=0 && (val&0xffffff00)!=0xffffff00)
-	  ret=bfd_reloc_overflow;
-      }
-      /* set the value */
-      p[0]=val&0xff;
-      break;
-
-    case 1: /* word size */
-      /* check for overflow */
-      if (sign) {
-	if (val<-0x8000 || val>0x7fff)
-	  ret = bfd_reloc_overflow;
-      }
-      else {
-	if ((val&0xffff0000)!=0 && (val&0xffff0000)!=0xffff0000)
-	  ret=bfd_reloc_overflow;
-      }
-      /* set the value */
-      p[1]=val&0xff;
-      p[0]=(val&0xff00)>>8;
-      break;
-
-    case 2: /* long word */
-      /* If we are linking a resident program, then we limit the reloc size
-	 to about +/- 1 GB.
-
-	 When linking a shared library all variables defined in other
-	 libraries are placed in memory >0x80000000, so if the library
-	 tries to use one of those variables an error is output.
-
-	 Without this it would be much more difficult to check for
-	 incorrect references. */
-      if (amiga_resident &&
-	  (val & 0xc0000000)!=0 && (val&0xc0000000)!=0xc0000000) /* Overflow */
-	{
-	  ret=bfd_reloc_overflow;
-	}
-      p[3]=val&0xff;
-      p[2]=(val&0xff00)>>8;
-      p[1]=(val&0xff0000)>>16;
-      p[0]=((unsigned int)val&0xff000000)>>24;
-      break;
-
-    default: /* Error */
-      ret=bfd_reloc_notsupported;
-      break;
-    }/* Of switch */
-
-  DPRINT(5,("Leaving set_value\n"));
-  return ret;
-}
-
-
 /* Perform an Amiga relocation */
 static bfd_reloc_status_type
 amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
@@ -597,7 +521,7 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
   asymbol *sym; /* Reloc is relative to sym */
   sec_ptr target_section; /* reloc is relative to this section */
   bfd_reloc_status_type ret;
-  bfd_boolean copy,sign,addval=TRUE;
+  bfd_boolean copy,sign;
   int relocation,size;
 
   DPRINT(5,("Entering aout_perf_reloc\n"));
@@ -710,10 +634,7 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
       else
 	{
 	  relocation = sym->value + target_section->output_offset
-	    - (r->address + sec->output_offset);
-	  if (size == 0)
-	    relocation--;
-	  addval = FALSE;
+	    - sec->output_offset;
 	}
       sign=TRUE;
       break;
@@ -784,12 +705,7 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
 
   /* Add in relocation */
   if (relocation!=0)
-    {
-      if (addval)
-	ret = my_add_to (data, r->address, size, relocation, sign);
-      else
-	ret = my_set_to (data, r->address, size, relocation, sign);
-    }
+    ret = my_add_to (data, r->address, size, relocation, sign);
 
   if (copy) /* Copy reloc to output section */
     {
