@@ -111,7 +111,7 @@ bfd_boolean
 aout_amiga_final_link PARAMS ((bfd *, struct bfd_link_info *));
 
 static bfd_reloc_status_type
-my_add_to PARAMS ((arelent *, PTR, int, bfd_boolean));
+my_add_to PARAMS ((arelent *, PTR, int, int));
 static bfd_reloc_status_type
 amiga_perform_reloc PARAMS ((bfd *, arelent *, PTR, sec_ptr, bfd *, char **));
 static bfd_reloc_status_type
@@ -119,6 +119,8 @@ aout_perform_reloc PARAMS ((bfd *, arelent *, PTR, sec_ptr, bfd *, char **));
 static bfd_boolean
 amiga_reloc_link_order PARAMS ((bfd *, struct bfd_link_info *, asection *,
 	struct bfd_link_order *));
+
+enum { ADDEND_UNSIGNED=0x01, RELOC_SIGNED=0x02 };
 
 
 /* This one is nearly identical to bfd_generic_get_relocated_section_contents
@@ -264,11 +266,10 @@ error_return:
 
 /* Add a value to a location */
 static bfd_reloc_status_type
-my_add_to (r, data, add, sign)
+my_add_to (r, data, add, flags)
      arelent *r;
      PTR data;
-     int add;
-     bfd_boolean sign;
+     int add, flags;
 {
   bfd_reloc_status_type ret=bfd_reloc_ok;
   bfd_byte *p=((bfd_byte *)data)+r->address;
@@ -279,9 +280,12 @@ my_add_to (r, data, add, sign)
   switch (r->howto->size)
     {
     case 0: /* byte size */
-      val = ((*p & 0xff) ^ 0x80) - 0x80 + add;
+      if ((flags & ADDEND_UNSIGNED) == 0)
+	val = ((*p & 0xff) ^ 0x80) - 0x80 + add;
+      else
+	val = (*p & 0xff) + add;
       /* check for overflow */
-      if (sign) {
+      if ((flags & RELOC_SIGNED) != 0) {
 	if (val<-0x80 || val>0x7f)
 	  ret = bfd_reloc_overflow;
       }
@@ -294,9 +298,12 @@ my_add_to (r, data, add, sign)
       break;
 
     case 1: /* word size */
-      val = bfd_getb_signed_16 (p) + add;
+      if ((flags & ADDEND_UNSIGNED) == 0)
+	val = bfd_getb_signed_16 (p) + add;
+      else
+	val = bfd_getb16 (p) + add;
       /* check for overflow */
-      if (sign) {
+      if ((flags & RELOC_SIGNED) != 0) {
 	if (val<-0x8000 || val>0x7fff)
 	  ret = bfd_reloc_overflow;
       }
@@ -350,8 +357,8 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
   asymbol *sym; /* Reloc is relative to sym */
   sec_ptr target_section; /* reloc is relative to this section */
   bfd_reloc_status_type ret;
-  bfd_boolean copy,sign;
-  int relocation;
+  bfd_boolean copy;
+  int relocation,flags;
 
   DPRINT(5,("Entering APR\nflavour is %d (amiga_flavour=%d, aout_flavour=%d)\n",
 	    bfd_get_flavour (sec->owner), bfd_target_amiga_flavour,
@@ -384,7 +391,7 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
       return bfd_reloc_undefined;
     }
 
-  relocation=0; sign=FALSE; copy=FALSE; ret=bfd_reloc_ok;
+  relocation=0; flags=RELOC_SIGNED; copy=FALSE; ret=bfd_reloc_ok;
 
   DPRINT(5,("%s: size=%u\n",r->howto->name,bfd_get_reloc_size(r->howto)));
   switch (r->howto->type)
@@ -481,8 +488,7 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
 	  relocation = sym->value + target_section->output_offset
 	    - (AMIGA_DATA(target_section->output_section->owner))->a4init
 	    + r->addend;
-	  copy=FALSE;
-	  sign=TRUE;
+	  flags|=ADDEND_UNSIGNED;
 	}
       break;
 
@@ -494,7 +500,7 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
 
   /* Add in relocation */
   if (relocation!=0)
-    ret = my_add_to (r, data, relocation, sign);
+    ret = my_add_to (r, data, relocation, flags);
 
   if (copy) /* Copy reloc to output section */
     {
@@ -522,8 +528,8 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
   asymbol *sym; /* Reloc is relative to sym */
   sec_ptr target_section; /* reloc is relative to this section */
   bfd_reloc_status_type ret;
-  bfd_boolean copy,sign;
-  int relocation;
+  bfd_boolean copy;
+  int relocation,flags;
 
   DPRINT(5,("Entering aout_perf_reloc\n"));
 
@@ -552,7 +558,7 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
       target_section=bfd_abs_section_ptr;
     }
 
-  relocation=0; sign=FALSE; copy=FALSE; ret=bfd_reloc_ok;
+  relocation=0; flags=RELOC_SIGNED; copy=FALSE; ret=bfd_reloc_ok;
 
   DPRINT(10,("RELOC: %s: size=%u\n",r->howto->name,bfd_get_reloc_size(r->howto)));
   switch (r->howto->type)
@@ -637,7 +643,6 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
 	  relocation = sym->value + target_section->output_offset
 	    - sec->output_offset;
 	}
-      sign=TRUE;
       break;
 
     case H_SD16: /* baserel */
@@ -682,15 +687,12 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
 	     into the opcode */
 	  if (target_section->index == 2)
 	    relocation -= adata(abfd).datasec->_raw_size;
-
-	  copy = FALSE;
-	  sign = TRUE;
-
 	  DPRINT(20,("symbol=%s (0x%lx)\nsection %s (0x%lx; %s; output=0x%lx)"
 		     "\nrelocation @0x%lx\n", sym->name, sym->value,
 		     target_section->name, target_section,
 		     target_section->owner->filename, target_section->output_offset,
 		     r->address));
+	  flags|=ADDEND_UNSIGNED;
 	}
       DPRINT(10,("target->out=%s(%lx), sec->out=%s(%lx), symbol=%s\n",
 		 target_section->output_section->name,
@@ -706,7 +708,7 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
 
   /* Add in relocation */
   if (relocation!=0)
-    ret = my_add_to (r, data, relocation, sign);
+    ret = my_add_to (r, data, relocation, flags);
 
   if (copy) /* Copy reloc to output section */
     {
