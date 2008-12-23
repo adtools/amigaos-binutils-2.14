@@ -350,7 +350,7 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
   sec_ptr target_section; /* reloc is relative to this section */
   bfd_reloc_status_type ret;
   bfd_boolean copy,sign;
-  int relocation,size;
+  int relocation;
 
   DPRINT(5,("Entering APR\nflavour is %d (amiga_flavour=%d, aout_flavour=%d)\n",
 	    bfd_get_flavour (sec->owner), bfd_target_amiga_flavour,
@@ -386,7 +386,7 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
   relocation=0; sign=FALSE; copy=FALSE; ret=bfd_reloc_ok;
 
   DPRINT(5,("%s: size=%u\n",r->howto->name,bfd_get_reloc_size(r->howto)));
-  switch (size=r->howto->size,r->howto->type)
+  switch (r->howto->type)
     {
     case H_ABS32:
       if (bfd_is_abs_section(target_section)) /* Ref to absolute hunk */
@@ -486,14 +486,14 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
       break;
 
     default:
-      bfd_msg ("Error: unsupported reloc %d(%s)\n",size,r->howto->name);
+      bfd_msg ("Error: unsupported reloc: %s(%d)\n",r->howto->name,r->howto->size);
       ret=bfd_reloc_notsupported;
       break;
     }/* Of switch */
 
   /* Add in relocation */
   if (relocation!=0)
-    ret = my_add_to (data, r->address, size, relocation, sign);
+    ret = my_add_to (data, r->address, r->howto->size, relocation, sign);
 
   if (copy) /* Copy reloc to output section */
     {
@@ -522,7 +522,7 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
   sec_ptr target_section; /* reloc is relative to this section */
   bfd_reloc_status_type ret;
   bfd_boolean copy,sign;
-  int relocation,size;
+  int relocation;
 
   DPRINT(5,("Entering aout_perf_reloc\n"));
 
@@ -554,7 +554,7 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
   relocation=0; sign=FALSE; copy=FALSE; ret=bfd_reloc_ok;
 
   DPRINT(10,("RELOC: %s: size=%u\n",r->howto->name,bfd_get_reloc_size(r->howto)));
-  switch (size=r->howto->size,r->howto->type)
+  switch (r->howto->type)
     {
     case H_ABS8: /* 8/16 bit reloc, pc relative or absolute */
     case H_ABS16:
@@ -698,14 +698,14 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
       break;
 
     default:
-      bfd_msg ("Error: unsupported reloc %d(%s)\n",size,r->howto->name);
+      bfd_msg ("Error: unsupported reloc: %s(%d)\n",r->howto->name,r->howto->size);
       ret=bfd_reloc_notsupported;
       break;
     }/* Of switch */
 
   /* Add in relocation */
   if (relocation!=0)
-    ret = my_add_to (data, r->address, size, relocation, sign);
+    ret = my_add_to (data, r->address, r->howto->size, relocation, sign);
 
   if (copy) /* Copy reloc to output section */
     {
