@@ -1093,17 +1093,29 @@ amiga_handle_rest (abfd, current_section, isload)
 	      if (bfd_seek (abfd, len<<2, SEEK_CUR))
 		return FALSE;
 
+	      /* We have symbols */
+	      abfd->flags |= HAS_SYMS;
+	      abfd->symcount++;
+
 	      switch (type)
 		{
 		case EXT_SYMB: /* Symbol hunks are relative to hunk start... */
 		case EXT_DEF: /* def relative to hunk */
 		case EXT_ABS: /* def absolute */
-		  abfd->flags |= HAS_SYMS; /* We have symbols */
-		  abfd->symcount++;
 		  /* skip the value */
 		  if (!get_long (abfd, &no))
 		    return FALSE;
 		  break;
+
+		case EXT_ABSCOMMON: /* Common ref/def */
+		case EXT_DEXT32COMMON:
+		case EXT_DEXT16COMMON:
+		case EXT_DEXT8COMMON:
+		  /* FIXME: skip the size of common block */
+		  if (!get_long (abfd, &no))
+		    return FALSE;
+
+		  /* Fall through */
 
 		case EXT_ABSREF32: /* 32 bit ref */
 		case EXT_RELREF16: /* 16 bit ref */
@@ -1113,33 +1125,12 @@ amiga_handle_rest (abfd, current_section, isload)
 		case EXT_DEXT8: /* 8 bit baserel */
 		case EXT_RELREF32:
 		case EXT_RELREF26:
-		  abfd->flags |= HAS_SYMS;
-		  abfd->symcount++;
 		  if (!get_long (abfd, &no))
 		    return FALSE;
 		  if (no)
 		    {
 		      relno += no;
 		      /* skip references */
-		      if (bfd_seek (abfd, no<<2, SEEK_CUR))
-			return FALSE;
-		    }
-		  break;
-
-		case EXT_ABSCOMMON: /* Common ref/def */
-		case EXT_DEXT32COMMON:
-		case EXT_DEXT16COMMON:
-		case EXT_DEXT8COMMON:
-		  abfd->flags |= HAS_SYMS;
-		  abfd->symcount++;
-		  /* FIXME: skip the size of common block */
-		  if (!get_long (abfd, &no))
-		    return FALSE;
-		  if (!get_long (abfd, &no))
-		    return FALSE;
-		  if (no)
-		    {
-		      relno += no;
 		      if (bfd_seek (abfd, no<<2, SEEK_CUR))
 			return FALSE;
 		    }
