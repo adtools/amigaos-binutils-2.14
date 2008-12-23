@@ -1251,11 +1251,9 @@ generic_link_check_archive_element (abfd, info, pneeded, collect)
 	     Doing this here is horrible kludgy, but IMHO the maximal
 	     power alignment really should be target-dependant so that
 	     we wouldn't have to do this -- daniel */
-	  if (bfd_get_flavour(abfd) == bfd_target_amiga_flavour) {
-	    if (power > 2)
-	      power = 2;
-	  }
-	  else
+	  if (info->hash->creator->flavour == bfd_target_amiga_flavour
+	      && power > 2)
+	    power = 2;
 	  if (power > 4)
 	    power = 4;
 	  h->u.c.p->alignment_power = power;
@@ -1722,11 +1720,9 @@ _bfd_generic_link_add_one_symbol (info, abfd, name, flags, section, value,
 	       Doing this here is horrible kludgy, but IMHO the maximal
 	       power alignment really should be target-dependant so that
 	       we wouldn't have to do this -- daniel */
-	    if (bfd_get_flavour(abfd) == bfd_target_amiga_flavour) {
-	      if (power > 2)
-		power = 2;
-	    }
-	    else
+	    if (info->hash->creator->flavour == bfd_target_amiga_flavour
+		&& power > 2)
+	      power = 2;
 	    if (power > 4)
 	      power = 4;
 	    h->u.c.p->alignment_power = power;
@@ -1782,6 +1778,13 @@ _bfd_generic_link_add_one_symbol (info, abfd, name, flags, section, value,
 	      /* Select a default alignment based on the size.  This may
 		 be overridden by the caller.  */
 	      power = bfd_log2 (value);
+	      /* For the amiga, we don't want an alignment bigger than 2**2.
+		 Doing this here is horrible kludgy, but IMHO the maximal
+		 power alignment really should be target-dependant so that
+		 we wouldn't have to do this -- daniel */
+	      if (info->hash->creator->flavour == bfd_target_amiga_flavour
+		  && power > 2)
+		power = 2;
 	      if (power > 4)
 		power = 4;
 	      h->u.c.p->alignment_power = power;
