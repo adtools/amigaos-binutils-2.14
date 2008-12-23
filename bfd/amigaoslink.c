@@ -461,10 +461,10 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
 
   relocation=0; sign=FALSE; copy=FALSE; ret=bfd_reloc_ok;
 
+  DPRINT(5,("%s: size=%u\n",r->howto->name,bfd_get_reloc_size(r->howto)));
   switch (size=r->howto->size,r->howto->type)
     {
     case H_ABS32:
-      DPRINT(5,("ABSRELOC32\n"));
       if (bfd_is_abs_section(target_section)) /* Ref to absolute hunk */
 	relocation=sym->value;
       else if (bfd_is_com_section(target_section)) /* ref to common */
@@ -501,7 +501,6 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
     case H_PC8: /* pcrel */
     case H_PC16:
     case H_PC32:
-      DPRINT(5,("RELRELOC\n"));
       if (bfd_is_abs_section(target_section)) /* Ref to absolute hunk */
 	relocation=sym->value;
       else if (bfd_is_com_section(target_section)) /* Error.. */
@@ -524,7 +523,6 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
     case H_SD8: /* baserel */
     case H_SD16:
     case H_SD32:
-      DPRINT(5,("BASERELOC\n"));
       /* Relocs are always relative to the symbol ___a4_init */
       /* Relocs to .bss section are converted to a reloc to .data section,
 	 since .bss section contains only COMMON sections...... and should
@@ -581,12 +579,12 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
       target_section->orelocation[target_section->reloc_count++]=r;
       target_section->flags|=SEC_RELOC;
     }
-  DPRINT(5,("Leaving a_perform_reloc\n"));
+  DPRINT(5,("Leaving amiga_perf_reloc with %d (OK=%d)\n",ret,bfd_reloc_ok));
   return ret;
 }
 
 
-/* Perform an a.out reloc */
+/* Perform an a.out relocation */
 static bfd_reloc_status_type
 aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
      bfd *abfd;
@@ -614,6 +612,8 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
       return bfd_reloc_ok;
     }
 
+  /* Try to apply the reloc */
+
   sym=*(r->sym_ptr_ptr);
   target_section=sym->section;
 
@@ -629,11 +629,11 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
 
   relocation=0; sign=FALSE; copy=FALSE; ret=bfd_reloc_ok;
 
+  DPRINT(10,("RELOC: %s: size=%u\n",r->howto->name,bfd_get_reloc_size(r->howto)));
   switch (size=r->howto->size,r->howto->type)
     {
     case H_ABS8: /* 8/16 bit reloc, pc relative or absolute */
     case H_ABS16:
-      DPRINT(10,("8/16 bit\n"));
       if (bfd_is_abs_section(target_section)) /* Ref to absolute hunk */
 	relocation=sym->value;
       else if (bfd_is_com_section(target_section)) /* Error.. */
@@ -665,7 +665,6 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
       break;
 
     case H_ABS32: /* 32 bit reloc, pc relative or absolute */
-      DPRINT(10,("32 bit\n"));
       if (bfd_is_abs_section(target_section)) /* Ref to absolute hunk */
 	relocation=sym->value;
       else if (bfd_is_com_section(target_section)) /* ref to common */
@@ -706,7 +705,6 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
     case H_PC8: /* pcrel */
     case H_PC16:
     case H_PC32:
-      DPRINT(10,("8/16/32 bit pcrel: size=%d\n", size));
       if (bfd_is_abs_section(target_section)) /* Ref to absolute hunk */
 	relocation=sym->value;
       else
@@ -722,7 +720,6 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
 
     case H_SD16: /* baserel */
     case H_SD32:
-      DPRINT(10,("16/32 bit baserel\n"));
     baserel:
       /* We use the symbol ___a4_init as base */
       if (bfd_is_abs_section(target_section))
