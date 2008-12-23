@@ -1247,10 +1247,10 @@ generic_link_check_archive_element (abfd, info, pneeded, collect)
 	  h->u.c.size = size;
 
 	  power = bfd_log2 (size);
-	  /* For the amiga, we don't want an alignment bigger than
-	     2**2. Doing this here is a horribly kludgy, but IMHO the
-	     max power alignment really should be target-dependant so
-	     that we wouldn't have to do this -- daniel */
+	  /* For the amiga, we don't want an alignment bigger than 2**2.
+	     Doing this here is horrible kludgy, but IMHO the maximal
+	     power alignment really should be target-dependant so that
+	     we wouldn't have to do this -- daniel */
 	  if (bfd_get_flavour(abfd) == bfd_target_amiga_flavour) {
 	    if (power > 2)
 	      power = 2;
@@ -1718,11 +1718,10 @@ _bfd_generic_link_add_one_symbol (info, abfd, name, flags, section, value,
 	    unsigned int power;
 
 	    power = bfd_log2 (value);
-	    /* For the amiga, we don't want an alignment bigger than
-               2**2. Doing this here is a horribly kludgy, but IMHO
-               the max power alignment really should be
-               target-dependant so that we wouldn't have to do this --
-               daniel */
+	    /* For the amiga, we don't want an alignment bigger than 2**2.
+	       Doing this here is horrible kludgy, but IMHO the maximal
+	       power alignment really should be target-dependant so that
+	       we wouldn't have to do this -- daniel */
 	    if (bfd_get_flavour(abfd) == bfd_target_amiga_flavour) {
 	      if (power > 2)
 		power = 2;

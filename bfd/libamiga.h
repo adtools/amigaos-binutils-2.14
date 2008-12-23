@@ -105,6 +105,8 @@ typedef struct amiga_reloc {
   asymbol *symbol;
 } amiga_reloc_type;
 
+/* Structure layout *must* match libaout.h/struct aout_symbol.  */
+
 typedef struct amiga_symbol {
   asymbol symbol;
   short desc;
@@ -115,7 +117,7 @@ typedef struct amiga_symbol {
 } amiga_symbol_type;
 
 /* We take the address of the first element of an asymbol to ensure that the
-   macro is only ever applied to an asymbol */
+   macro is only ever applied to an asymbol.  */
 #define amiga_symbol(asymbol) ((amiga_symbol_type *)(&(asymbol)->the_bfd))
 
 typedef struct raw_reloc {
@@ -135,10 +137,7 @@ typedef struct amiga_per_section {
 
 #define amiga_per_section(x) ((amiga_per_section_type *)((x)->used_by_bfd))
 
-/* The `tdata' struct for all a.out-like object file formats.
-   Various things depend on this struct being around any time an a.out
-   file is being handled.  An example is dbxread.c in GDB.  */
-/* Structure layout *must* match <<libaout.h/struct aoutdata>> */
+/* Structure layout *must* match libaout.h/struct aoutdata.  */
 
 struct amiga_data {
   char *dummy[2];
