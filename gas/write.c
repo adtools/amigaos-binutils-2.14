@@ -2744,6 +2744,11 @@ fixup_segment (fixP, this_segment)
 	    }
 	}
 
+#if !defined(BFD_ASSEMBLER) && !defined(MANY_SEGMENTS)
+      if (fixP->tc_fix_data && add_number != fixP->fx_offset)
+        add_number -= text_last_frag->fr_address;
+#endif
+
       if (!fixP->fx_done)
 	md_apply_fix3 (fixP, &add_number, this_segment);
 
@@ -2756,11 +2761,6 @@ fixup_segment (fixP, this_segment)
 	  if (fixP->fx_subsy != NULL)
 	    symbol_mark_used_in_reloc (fixP->fx_subsy);
 	}
-
-#if !defined(BFD_ASSEMBLER) && !defined(MANY_SEGMENTS)
-      if (fixP->tc_fix_data && add_number)
-        add_number -= text_last_frag->fr_address;
-#endif
 
       if (!fixP->fx_bit_fixP && !fixP->fx_no_overflow && fixP->fx_size != 0)
 	{
