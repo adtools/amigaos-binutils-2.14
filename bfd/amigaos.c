@@ -1630,8 +1630,6 @@ amiga_write_armap (arch, elength, map, orl_count, stridx)
   return TRUE;
 }
 
-#define determine_size(TYPE) (2 - ((TYPE)>=3 ? (TYPE)-3 : (TYPE)))
-
 static int
 determine_type (r)
      arelent *r;
@@ -1686,9 +1684,8 @@ amiga_write_section_contents (abfd, section, data_sec, datadata_relocs,
   asymbol *sym_p;
   arelent *r;
   unsigned long zero=0,disksize,pad,n[2],k,l,s;
-  int i,j,x,type,size,reloc_count=0;
+  int i,j,x,type,reloc_count=0;
   unsigned char *values;
-  char *c_p;
   long *reloc_counts;
 
   DPRINT(5,("Entering write_section_contents\n"));
@@ -1824,25 +1821,23 @@ amiga_write_section_contents (abfd, section, data_sec, datadata_relocs,
       reloc_counts[type+(x*NB_RELOC_TYPES)]++;
       reloc_count++;
 
-      /* There is no error checking with these.. */
+      /* There is no error checking with these... */
       DPRINT(5,("reloc address=%lx,addend=%lx\n",r->address,r->addend));
       values = &section->contents[r->address];
 
-      size = determine_size(type);
-      switch (size)
+      switch (type)
 	{
-	case 0: /* adjust byte */
-	  c_p = (char *)values;
-	  x = (int)(*c_p) + r->addend;
-	  *c_p = (signed char)x;
+	case 2: case 5: /* adjust byte */
+	  x = ((char *)values)[0] + r->addend;
+	  values[0] = x & 0xff;
 	  break;
-	case 1: /* adjust word */
+	case 1: case 4: /* adjust word */
 	  k = values[1] | (values[0] << 8);
 	  x = (int)k + r->addend;
 	  values[0] = (x & 0xff00) >> 8;
 	  values[1] = x & 0xff;
 	  break;
-	case 2: /* adjust long */
+	case 0: case 3: /* adjust long */
 	  k = values[3] | (values[2] << 8) | (values[1] << 16) |
 	    (values[0] << 24);
 	  x = (int)k + r->addend;
