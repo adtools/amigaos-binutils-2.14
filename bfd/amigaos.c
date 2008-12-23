@@ -856,7 +856,7 @@ amiga_handle_cdb_hunk (abfd, hunk_type, hunk_number, hunk_attribute,
 /* If hunk_size==-1, then we are digesting a HUNK_UNIT */
 {
   sec_ptr current_section;
-  char *current_name;
+  char *sec_name,*current_name=NULL;
   unsigned long len,tmp;
   int secflags,is_load=(hunk_size!=(unsigned long)-1);
 
@@ -866,21 +866,26 @@ amiga_handle_cdb_hunk (abfd, hunk_type, hunk_number, hunk_attribute,
 	return FALSE;
 
       len = HUNK_VALUE (tmp) << 2;
-      current_name = bfd_alloc (abfd, len+1);
-      if (!current_name)
-	return FALSE;
+      if (len != 0)
+	{
+	  current_name = bfd_alloc (abfd, len+1);
+	  if (!current_name)
+	    return FALSE;
 
-      if (bfd_bread (current_name, len, abfd) != len)
-	return FALSE;
+	  if (bfd_bread (current_name, len, abfd) != len)
+	    return FALSE;
 
-      current_name[len] = '\0';
+	  current_name[len] = '\0';
+	  if (current_name[0] == '\0')
+	    {
+	       bfd_release (abfd, current_name);
+	       current_name = NULL;
+	    }
+	}
 
       if (!get_long (abfd, &hunk_type))
 	return FALSE;
     }
-  else /* Set curent name to something appropriate */
-    current_name=(hunk_type==HUNK_CODE||hunk_type==HUNK_PPC_CODE)?".text":
-		 (hunk_type==HUNK_BSS)?".bss":".data";
 
   /* file_pointer is now after hunk_type */
   secflags = 0;
@@ -889,16 +894,21 @@ amiga_handle_cdb_hunk (abfd, hunk_type, hunk_number, hunk_attribute,
     case HUNK_CODE:
     case HUNK_PPC_CODE:
       secflags = SEC_ALLOC | SEC_LOAD | SEC_CODE | SEC_HAS_CONTENTS;
+      sec_name = ".text";
       goto do_section;
 
     case HUNK_DATA:
       secflags = SEC_ALLOC | SEC_LOAD | SEC_DATA | SEC_HAS_CONTENTS;
+      sec_name = ".data";
       goto do_section;
 
     case HUNK_BSS:
       secflags = SEC_ALLOC;
+      sec_name = ".bss";
 
     do_section:
+      if (!current_name)
+	current_name = sec_name;
       if (!get_long (abfd, &tmp))
 	return FALSE;
       len = HUNK_VALUE (tmp) << 2; /* Length of section */
