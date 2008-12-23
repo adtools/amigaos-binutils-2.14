@@ -111,7 +111,7 @@ bfd_boolean
 aout_amiga_final_link PARAMS ((bfd *, struct bfd_link_info *));
 
 static bfd_reloc_status_type
-my_add_to PARAMS ((PTR, int, int, int, bfd_boolean));
+my_add_to PARAMS ((arelent *, PTR, int, bfd_boolean));
 static bfd_reloc_status_type
 amiga_perform_reloc PARAMS ((bfd *, arelent *, PTR, sec_ptr, bfd *, char **));
 static bfd_reloc_status_type
@@ -264,21 +264,22 @@ error_return:
 
 /* Add a value to a location */
 static bfd_reloc_status_type
-my_add_to (data, offset, size, add, sign)
+my_add_to (r, data, add, sign)
+     arelent *r;
      PTR data;
-     int offset, size, add;
+     int add;
      bfd_boolean sign;
 {
   bfd_reloc_status_type ret=bfd_reloc_ok;
-  signed char *p=((signed char *)data)+offset;
+  bfd_byte *p=((bfd_byte *)data)+r->address;
   int val;
 
   DPRINT(5,("Entering add_value\n"));
 
-  switch (size)
+  switch (r->howto->size)
     {
     case 0: /* byte size */
-      val = (p[0]&0xff) + add;
+      val = ((*p & 0xff) ^ 0x80) - 0x80 + add;
       /* check for overflow */
       if (sign) {
 	if (val<-0x80 || val>0x7f)
@@ -289,11 +290,11 @@ my_add_to (data, offset, size, add, sign)
 	  ret=bfd_reloc_overflow;
       }
       /* set the value */
-      p[0]=val&0xff;
+      *p = val & 0xff;
       break;
 
     case 1: /* word size */
-      val = bfd_getb16 (p) + add;
+      val = bfd_getb_signed_16 (p) + add;
       /* check for overflow */
       if (sign) {
 	if (val<-0x8000 || val>0x7fff)
@@ -308,7 +309,7 @@ my_add_to (data, offset, size, add, sign)
       break;
 
     case 2: /* long word */
-      val = bfd_getb32 (p) + add;
+      val = bfd_getb_signed_32 (p) + add;
       /* If we are linking a resident program, then we limit the reloc size
 	 to about +/- 1 GB.
 
@@ -493,7 +494,7 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
 
   /* Add in relocation */
   if (relocation!=0)
-    ret = my_add_to (data, r->address, r->howto->size, relocation, sign);
+    ret = my_add_to (r, data, relocation, sign);
 
   if (copy) /* Copy reloc to output section */
     {
@@ -705,7 +706,7 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
 
   /* Add in relocation */
   if (relocation!=0)
-    ret = my_add_to (data, r->address, r->howto->size, relocation, sign);
+    ret = my_add_to (r, data, relocation, sign);
 
   if (copy) /* Copy reloc to output section */
     {
