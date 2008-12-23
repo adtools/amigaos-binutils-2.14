@@ -173,7 +173,7 @@ amiga_assign_attribute (inp)
 {
   asection *s;
 
-  if (inp->the_bfd->xvec->flavour==bfd_target_amiga_flavour)
+  if (bfd_get_flavour(inp->the_bfd)==bfd_target_amiga_flavour)
     {
       for (s=inp->the_bfd->sections;s!=NULL;s=s->next)
 	amiga_per_section(s)->attribute=inp->amiga_attribute;

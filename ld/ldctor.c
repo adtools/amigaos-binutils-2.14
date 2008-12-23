@@ -269,7 +269,7 @@ ldctor_build_sets ()
       /* dgv -- libnix v1.1 uses absolute sets that are also explicitly
 	 defined in the library so that the sets need to be build even
 	 if the symbol is defined */
-      if ((output_bfd->xvec->flavour != bfd_target_amiga_flavour) &&
+      if ((bfd_get_flavour (output_bfd) != bfd_target_amiga_flavour) &&
 	  (p->h->type == bfd_link_hash_defined
 	  || p->h->type == bfd_link_hash_defweak))
 	continue;
@@ -378,7 +378,7 @@ ldctor_build_sets ()
 	  /* dgv -- on the amiga, we want the constructors to be relocateable
 	     objects. However, this should be arranged somewhere else (FIXME) */
 	  if (link_info.relocateable ||
-	      (output_bfd->xvec->flavour == bfd_target_amiga_flavour &&
+	      (bfd_get_flavour (output_bfd) == bfd_target_amiga_flavour &&
 	       e->section != bfd_abs_section_ptr))
 	    lang_add_reloc (p->reloc, howto, e->section, e->name,
 			    exp_intop (e->value));

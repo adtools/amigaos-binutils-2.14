@@ -2070,7 +2070,7 @@ NAME(aout,swap_std_reloc_out) (abfd, g, natptr)
   r_pcrel  = (int) g->howto->pc_relative; /* Relative to PC?  */
 #if 1
   /* FIXME! "#if 1" is the wrong way to select this Amiga specific code.  */
-  switch (bfd_asymbol_bfd(sym)->xvec->flavour)
+  switch (bfd_asymbol_flavour(sym))
     {
     case bfd_target_amiga_flavour:
     case bfd_target_aout_flavour:
