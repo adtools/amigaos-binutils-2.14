@@ -53,7 +53,7 @@ static unsigned long MY(get_mach) PARAMS ((enum machine_type));
 static bfd_boolean MY(write_object_contents) PARAMS ((bfd *));
 static bfd_boolean MY(set_sizes) PARAMS ((bfd *));
 static bfd_boolean MY(link_add_symbols) PARAMS ((bfd *, struct bfd_link_info *));
-#define MY_bfd_link_add_symbols MY(link_add_symbols)
+#define MY_bfd_link_add_symbols aout_amiga_link_add_symbols
 
 static unsigned long
 MY(get_mach) (machtype)
@@ -131,6 +131,7 @@ MY(set_sizes) (abfd)
 /* Include the usual a.out support.  */
 #include "aout-target.h"
 
+/* Add symbols from an object file to the global hash table.  */
 static bfd_boolean
 MY(link_add_symbols) (abfd, info)
      bfd *abfd;
