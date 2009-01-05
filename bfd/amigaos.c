@@ -588,7 +588,7 @@ parse_archive_units (abfd, n_units, filesize, one, syms, symcount)
 	  break;
 
 	default: /* error */
-	  bfd_msg ("unexpected type %ld(0x%lx) in hunk_ext1 at offset 0x%lx\n",
+	  bfd_msg ("unexpected type %ld(0x%lx) in hunk_ext1 at offset 0x%lx",
 		   type, type, bfd_tell (abfd));
 	  return FALSE;
 	}
@@ -614,7 +614,7 @@ parse_archive_units (abfd, n_units, filesize, one, syms, symcount)
 
     default:
 #if 0
-      bfd_msg ("unexpected hunk 0x%lx at offset 0x%lx\n",
+      bfd_msg ("unexpected hunk 0x%lx at offset 0x%lx",
 	       hunk_type, bfd_tell (abfd));
 #endif
       return FALSE;
@@ -765,7 +765,7 @@ amiga_read_load (abfd)
   /* Num of last hunk must be mhn-1 */
   if (GL (&buf[12]) != max_hunk_number-1)
     {
-      bfd_msg ("Overlay loadfiles are not supported\n");
+      bfd_msg ("Overlay loadfiles are not supported");
       bfd_set_error (bfd_error_wrong_format);
       return FALSE;
     }
@@ -1147,7 +1147,7 @@ amiga_handle_rest (abfd, current_section, isload)
 		  break;
 
 		default: /* error */
-		  bfd_msg ("unexpected type %ld(0x%lx) in hunk_ext2 at offset 0x%lx\n",
+		  bfd_msg ("unexpected type %ld(0x%lx) in hunk_ext2 at offset 0x%lx",
 			   type, type, bfd_tell (abfd));
 		  bfd_set_error (bfd_error_wrong_format);
 		  return FALSE;
@@ -1468,7 +1468,7 @@ amiga_write_object_contents (abfd)
 
 	  if (i!=7) /* section(s) missing... */
 	    {
-	      bfd_msg ("Missing section, debughunk not written\n");
+	      bfd_msg ("Missing section, debughunk not written");
 	      return TRUE;
 	    }
 
@@ -1495,7 +1495,7 @@ amiga_write_object_contents (abfd)
 		  bfd_h_put_8(abfd, t->type, data.e_type);
 		  if (!translate_to_native_sym_flags(abfd,sym,&data))
 		    {
-		      bfd_msg ("Cannot translate flags for %s\n", sym->name);
+		      bfd_msg ("Cannot translate flags for %s", sym->name);
 		    }
 		  bfd_h_put_32(abfd, offset, &data.e_strx[0]); /* Store index */
 		  offset += strlen(sym->name) + 1;
@@ -1807,7 +1807,7 @@ amiga_write_section_contents (abfd, section, data_sec, datadata_relocs,
       /* Determine which hunk to write, and index of target */
       x = index_map[insection->output_section->index];
       if (x<0 || x>max_hunk) {
-	bfd_msg ("erroneous relocation to hunk %d\n", x);
+	bfd_msg ("erroneous relocation to hunk %d", x);
 	BFD_FAIL ();
       }
 
@@ -2081,7 +2081,7 @@ amiga_write_symbols (abfd, section)
 	      break;
 
 	    default: /* Error, can't represent this */
-	      bfd_msg ("unexpected reloc %d(%s) at offset 0x%lx\n",
+	      bfd_msg ("unexpected reloc %d(%s) at offset 0x%lx",
 		       r->howto->type, r->howto->name, bfd_tell (abfd));
 	      bfd_set_error (bfd_error_nonrepresentable_section);
 	      return FALSE;
@@ -2095,7 +2095,7 @@ amiga_write_symbols (abfd, section)
 	  switch (r->howto->type)
 	    {
 	    default:
-	      bfd_msg ("Warning: bad reloc %s for common symbol %s\n",
+	      bfd_msg ("Warning: bad reloc %s for common symbol %s",
 		       r->howto->name, sym_p->name);
 	    case H_ABS32:
 	      type=EXT_ABSCOMMON;
@@ -2883,7 +2883,7 @@ amiga_slurp_armap (abfd)
 	  symblock += (1+GL (symblock))<<2;
 	  break;
 	default: /* error */
-	  bfd_msg ("unexpected type %ld(0x%lx) in hunk_ext3 at offset 0x%lx\n",
+	  bfd_msg ("unexpected type %ld(0x%lx) in hunk_ext3 at offset 0x%lx",
 		   type, type, bfd_tell (abfd));
 	  return FALSE;
 	}

@@ -464,7 +464,7 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
       else if (!AMIGA_DATA(target_section->output_section->owner)->baserel)
 	{
 	  bfd_msg ("Base symbol for base relative reloc not defined: "
-		   "section %s, reloc to symbol %s\n",sec->name,sym->name);
+		   "section %s, reloc to symbol %s",sec->name,sym->name);
 	  ret=bfd_reloc_notsupported;
 	}
       else
@@ -493,7 +493,7 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
       break;
 
     default:
-      bfd_msg ("Error: unsupported reloc: %s(%d)\n",r->howto->name,r->howto->size);
+      bfd_msg ("Error: unsupported reloc: %s(%d)",r->howto->name,r->howto->size);
       ret=bfd_reloc_notsupported;
       break;
     }/* Of switch */
@@ -570,7 +570,7 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
       else if (bfd_is_com_section(target_section)) /* Error.. */
 	{
 	  bfd_msg ("pc relative relocation to common symbol \"%s\" in "
-		   "section %s\n",sym->name,sec->name);
+		   "section %s",sym->name,sec->name);
 	  DPRINT(10,("Ref to common symbol...aout_perf_reloc\n"));
 	  ret=bfd_reloc_undefined;
 	}
@@ -579,7 +579,7 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
 	  if ((target_section->output_section->flags&SEC_DATA)!=0)
 	    goto baserel; /* Dirty, but no code duplication.. */
 	  bfd_msg ("pc relative relocation out-of-range in section %s. "
-		   "Relocation was to symbol %s\n",sec->name,sym->name);
+		   "Relocation was to symbol %s",sec->name,sym->name);
 	  DPRINT(10,("Section %s, target %s: Reloc out-of-range...not same "
 		     "section, aout_perf\nsec->out=%s, target->out=%s, "
 		     "offset=%lx\n",sec->name,target_section->name,
@@ -653,14 +653,14 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
 	relocation=sym->value;
       else if (bfd_is_com_section(target_section)) /* Error.. */
 	{
-	  bfd_msg ("baserelative relocation to common \"%s\"\n",sym->name);
+	  bfd_msg ("baserelative relocation to common \"%s\"",sym->name);
 	  DPRINT(10,("Ref to common symbol...aout_perf_reloc\n"));
 	  ret=bfd_reloc_undefined;
 	}
       else if (!AMIGA_DATA(target_section->output_section->owner)->baserel)
 	{
 	  bfd_msg ("Base symbol for base relative reloc not defined: "
-		   "section %s, reloc to symbol %s\n",sec->name,sym->name);
+		   "section %s, reloc to symbol %s",sec->name,sym->name);
 	  ret=bfd_reloc_notsupported;
 	}
       else /* Target section and sec need not be the same.. */
@@ -701,7 +701,7 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
       break;
 
     default:
-      bfd_msg ("Error: unsupported reloc: %s(%d)\n",r->howto->name,r->howto->size);
+      bfd_msg ("Error: unsupported reloc: %s(%d)",r->howto->name,r->howto->size);
       ret=bfd_reloc_notsupported;
       break;
     }/* Of switch */
@@ -796,7 +796,7 @@ amiga_final_link (abfd, info)
 	      if (bfd_get_flavour(abfd)!=bfd_target_amiga_flavour) /* oops */
 		{
 		  bfd_msg ("You can't use base relative linking with "
-			   "partial links.\n");
+			   "partial links.");
 		}
 	      else if (0) /* XXX */
 		{
