@@ -8,17 +8,17 @@ ${SHLIB_PATH+${RELOCATING+${SHLIB_PATH}}}
 
 SECTIONS
 {
+  ${RELOCATING+PROVIDE(___machtype = 0x0);}
   ${RELOCATING+. = ${TEXT_START_ADDR};}
   .text :
   {
-    ${RELOCATING+___machtype = ABSOLUTE(0x0);}
     ${RELOCATING+__stext = .;}
     *(.text)
     ${RELOCATING+___datadata_relocs = .;}
     ${RELOCATING+__etext = .;}
-    ${RELOCATING+___text_size = ABSOLUTE(__etext - __stext);}
     ${PAD_TEXT+${RELOCATING+. = ${DATA_ALIGNMENT};}}
   }
+  ${RELOCATING+___text_size = SIZEOF(.text);}
   ${RELOCATING+. = ${DATA_ALIGNMENT};}
   .data :
   {
@@ -26,16 +26,16 @@ SECTIONS
     ${CONSTRUCTING+CONSTRUCTORS}
     *(.data)
     ${RELOCATING+___a4_init = 0x7ffe;}
-    ${RELOCATING+___data_size = ABSOLUTE(__edata - __sdata);}
-    ${RELOCATING+___bss_size = ABSOLUTE(0);}
+    ${RELOCATING+__edata = .;}
   }
   .bss :
   {
+    ${RELOCATING+__bss_start = .;}
     *(.bss)
     *(COMMON)
-    ${RELOCATING+__edata = .;}
-    ${RELOCATING+__bss_start = .;}
-    ${RELOCATING+__end = ALIGN(4) };
+    ${RELOCATING+__end = .;}
   }
+  ${RELOCATING+___data_size = SIZEOF(.data) + SIZEOF(.bss);}
+  ${RELOCATING+___bss_size = 0x0;}
 }
 EOF
