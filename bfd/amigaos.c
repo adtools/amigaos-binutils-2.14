@@ -1684,9 +1684,9 @@ amiga_write_section_contents (abfd, section, data_sec, datadata_relocs,
   asymbol *sym_p;
   arelent *r;
   unsigned long zero=0,disksize,pad,n[2],k,l,s;
-  int i,j,x,type,reloc_count=0;
+  long *reloc_counts,reloc_count=0;
   unsigned char *values;
-  long *reloc_counts;
+  int i,j,x,type;
 
   DPRINT(5,("Entering write_section_contents\n"));
 
@@ -1807,8 +1807,10 @@ amiga_write_section_contents (abfd, section, data_sec, datadata_relocs,
       /* Determine which hunk to write, and index of target */
       x = index_map[insection->output_section->index];
       if (x<0 || x>max_hunk) {
-	bfd_msg ("erroneous relocation to hunk %d", x);
-	BFD_FAIL ();
+	bfd_msg ("erroneous relocation to hunk %d/%s from %s",
+		 x, insection->output_section->name, insection->name);
+	bfd_set_error (bfd_error_nonrepresentable_section);
+	return FALSE;
       }
 
       type = determine_type(r);
@@ -1904,7 +1906,7 @@ amiga_write_section_contents (abfd, section, data_sec, datadata_relocs,
 
   DPRINT(10,("Wrote contents, writing relocs now\n"));
 
-  while (reloc_count) {
+  if (reloc_count > 0) {
     /* Sample every reloc type */
     for (i = 0; i < NB_RELOC_TYPES; i++) {
       int written = FALSE;
@@ -1969,6 +1971,10 @@ amiga_write_section_contents (abfd, section, data_sec, datadata_relocs,
 
   bfd_release (abfd, reloc_counts);
   DPRINT(5,("Leaving write_section...\n"));
+  if (reloc_count > 0) {
+    bfd_set_error (bfd_error_nonrepresentable_section);
+    return FALSE;
+  }
   return TRUE;
 }
 
