@@ -157,8 +157,8 @@ typedef struct amiga_ardata_struct {
 #define GW(x) bfd_get_16 (abfd, (bfd_byte *) (x))
 #define LONGSIZE(l) (((l)+3) >> 2)
 
-/* AmigaOS doesn't like symbol names longer than 124 characters */
-#define MAX_NAME_SIZE 0
+/* AmigaOS doesn't like HUNK_SYMBOL with symbol names longer than 124 characters */
+#define MAX_NAME_SIZE 124
 
 static bfd_boolean get_long PARAMS ((bfd *, unsigned long *));
 static const struct bfd_target *amiga_object_p PARAMS ((bfd *));
@@ -1552,7 +1552,7 @@ write_name (abfd, name, value)
   size_t l;
 
   l = strlen (name);
-  if (MAX_NAME_SIZE && l > MAX_NAME_SIZE)
+  if (AMIGA_DATA(abfd)->IsLoadFile && l > MAX_NAME_SIZE)
     l = MAX_NAME_SIZE;
   n[0] = (LONGSIZE (l) | value);
   if (!write_longs (n, 1, abfd))
