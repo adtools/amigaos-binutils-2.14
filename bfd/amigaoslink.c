@@ -467,6 +467,12 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
 		   "section %s, reloc to symbol %s",sec->name,sym->name);
 	  ret=bfd_reloc_notsupported;
 	}
+      else if ((target_section->flags&SEC_CODE)!=0)
+        {
+	  bfd_msg ("%s: baserelative text relocation to \"%s\"",
+		    abfd->filename, sym->name);
+	  ret=bfd_reloc_notsupported;
+        }
       else
 	{
 	  /* If target->out is .bss, add the value of the .data section to
@@ -663,6 +669,12 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
 		   "section %s, reloc to symbol %s",sec->name,sym->name);
 	  ret=bfd_reloc_notsupported;
 	}
+      else if ((target_section->flags&SEC_CODE)!=0)
+        {
+	  bfd_msg ("%s: baserelative text relocation to \"%s\"",
+		    abfd->filename, sym->name);
+	  ret=bfd_reloc_notsupported;
+        }
       else /* Target section and sec need not be the same.. */
 	{
 	  /* If target->out is .bss, add the value of the .data section to
