@@ -490,7 +490,7 @@ parse_archive_units (abfd, n_units, filesize, one, syms, symcount)
 
   *n_units = 0;
   while (get_long (abfd, &hunk_type)) {
-    switch (hunk_type) {
+    switch (HUNK_VALUE (hunk_type)) {
     case HUNK_END:
       break;
     case HUNK_UNIT:
@@ -684,12 +684,11 @@ amiga_read_unit (abfd, size)
 
   while (bfd_tell (abfd) < size)
     {
-      if (!get_long (abfd, &tmp))
+      if (!get_long (abfd, &hunk_type))
 	return FALSE;
 
       /* Now there may be CODE, DATA, BSS, SYMBOL, DEBUG, RELOC Hunks */
-      hunk_type = HUNK_VALUE (tmp);
-      switch (hunk_type)
+      switch (HUNK_VALUE (hunk_type))
 	{
 	case HUNK_UNIT:
 	  /* next unit, seek back and return */
@@ -730,8 +729,8 @@ static bfd_boolean
 amiga_read_load (abfd)
      bfd *abfd;
 {
-  unsigned long max_hunk_number,hunk_type,tmp,i;
   unsigned long *hunk_attributes,*hunk_sizes;
+  unsigned long max_hunk_number,hunk_type,i;
   char buf[16];
 
   /* Read hunk lengths (and memory attributes...) */
@@ -804,12 +803,11 @@ amiga_read_load (abfd)
 
   for (i=0; i<max_hunk_number; i++)
     {
-      if (!get_long (abfd, &tmp))
+      if (!get_long (abfd, &hunk_type))
 	return FALSE;
 
       /* This may be HUNK_NAME, CODE, DATA, BSS, DEBUG */
-      hunk_type = HUNK_VALUE (tmp);
-      switch (hunk_type)
+      switch (HUNK_VALUE (hunk_type))
 	{
 	case HUNK_NAME:
 	case HUNK_CODE:
@@ -860,7 +858,7 @@ amiga_handle_cdb_hunk (abfd, hunk_type, hunk_number, hunk_attribute,
   unsigned long len,tmp;
   int secflags,is_load=(hunk_size!=(unsigned long)-1);
 
-  if (hunk_type==HUNK_NAME) /* get name */
+  if (HUNK_NAME == HUNK_VALUE (hunk_type)) /* get name */
     {
       if (!get_long (abfd, &tmp))
 	return FALSE;
@@ -889,7 +887,7 @@ amiga_handle_cdb_hunk (abfd, hunk_type, hunk_number, hunk_attribute,
 
   /* file_pointer is now after hunk_type */
   secflags = 0;
-  switch (hunk_type)
+  switch (HUNK_VALUE (hunk_type))
     {
     case HUNK_CODE:
     case HUNK_PPC_CODE:
@@ -1003,14 +1001,15 @@ amiga_handle_rest (abfd, current_section, isload)
      bfd_boolean isload;
 {
   amiga_per_section_type *asect=amiga_per_section(current_section);
-  unsigned long hunk_type,relno,type,len,no;
+  unsigned long hunk_type,hunk_value,relno,type,len,no;
   raw_reloc_type *relp;
 
   for (relno=0;;)
     {
       if (!get_long (abfd, &hunk_type))
 	return FALSE;
-      switch (hunk_type)
+      hunk_value = HUNK_VALUE (hunk_type);
+      switch (hunk_value)
 	{
 	case HUNK_END:
 	  if (relno)
@@ -1024,7 +1023,7 @@ amiga_handle_rest (abfd, current_section, isload)
 
 	case HUNK_DREL32:
 	  if (isload)
-	    hunk_type = HUNK_RELOC32SHORT;
+	    hunk_value = HUNK_RELOC32SHORT;
 	case HUNK_ABSRELOC32:
 	case HUNK_RELRELOC16:
 	case HUNK_RELRELOC8:
@@ -1037,7 +1036,7 @@ amiga_handle_rest (abfd, current_section, isload)
 	  asect->relocs = relp;
 	  relp->pos = bfd_tell (abfd) - 4;
 	  relp->num = 0;
-	  if (hunk_type != HUNK_RELOC32SHORT) {
+	  if (hunk_value != HUNK_RELOC32SHORT) {
 	    for (;;) {
 	      if (!get_long (abfd, &no))
 		return FALSE;
@@ -1166,13 +1165,15 @@ amiga_handle_rest (abfd, current_section, isload)
 
 	default: /* error */
 	  bfd_seek (abfd, -4, SEEK_CUR);
-	  bfd_msg ("missing HUNK_END: unexpected hunktype %ld(0x%lx) at offset 0x%lx",
+	  bfd_msg ("HUNK_END missing: unexpected hunktype %ld(0x%lx) at offset 0x%lx",
 		   hunk_type, hunk_type, bfd_tell (abfd));
-	  hunk_type = HUNK_VALUE(hunk_type);
-	  if (hunk_type == HUNK_CODE || hunk_type == HUNK_DATA || hunk_type == HUNK_BSS)
-	    return TRUE;
-	  bfd_set_error (bfd_error_wrong_format);
-	  return FALSE;
+	  switch (hunk_value) {
+	    default:
+	      bfd_set_error (bfd_error_wrong_format);
+	      return FALSE;
+	    case HUNK_CODE: case HUNK_DATA: case HUNK_BSS:
+	      return TRUE;
+	  }
 	  break;
 	}/* Of switch */
     }/* Of for */
