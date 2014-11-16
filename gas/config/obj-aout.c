@@ -28,6 +28,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 #include "obstack.h"
 
+#ifdef CROSS_COMPILE
+#undef CROSS_COMPILE
+#define CROSS_COMPILE 1
+#else
+#define CROSS_COMPILE 0
+#endif /* CROSS_COMPILE */
+
 #ifndef BFD_ASSEMBLER
 /* in: segT   out: N_TYPE bits */
 const short seg_N_TYPE[] =
@@ -272,29 +279,23 @@ obj_header_append (where, headers)
 {
   tc_headers_hook (headers);
 
-#ifdef CROSS_COMPILE
-  md_number_to_chars (*where, headers->header.a_info, sizeof (headers->header.a_info));
-  *where += sizeof (headers->header.a_info);
-  md_number_to_chars (*where, headers->header.a_text, sizeof (headers->header.a_text));
-  *where += sizeof (headers->header.a_text);
-  md_number_to_chars (*where, headers->header.a_data, sizeof (headers->header.a_data));
-  *where += sizeof (headers->header.a_data);
-  md_number_to_chars (*where, headers->header.a_bss, sizeof (headers->header.a_bss));
-  *where += sizeof (headers->header.a_bss);
-  md_number_to_chars (*where, headers->header.a_syms, sizeof (headers->header.a_syms));
-  *where += sizeof (headers->header.a_syms);
-  md_number_to_chars (*where, headers->header.a_entry, sizeof (headers->header.a_entry));
-  *where += sizeof (headers->header.a_entry);
-  md_number_to_chars (*where, headers->header.a_trsize, sizeof (headers->header.a_trsize));
-  *where += sizeof (headers->header.a_trsize);
-  md_number_to_chars (*where, headers->header.a_drsize, sizeof (headers->header.a_drsize));
-  *where += sizeof (headers->header.a_drsize);
+  if (CROSS_COMPILE)
+    {
+      struct exec_bytes *const e_b = (void *) *where;
 
-#else /* CROSS_COMPILE */
+      md_number_to_chars ((char *) e_b->a_info, headers->header.a_info, sizeof (e_b->a_info));
+      md_number_to_chars ((char *) e_b->a_text, headers->header.a_text, sizeof (e_b->a_text));
+      md_number_to_chars ((char *) e_b->a_data, headers->header.a_data, sizeof (e_b->a_data));
+      md_number_to_chars ((char *) e_b->a_bss, headers->header.a_bss, sizeof (e_b->a_bss));
+      md_number_to_chars ((char *) e_b->a_syms, headers->header.a_syms, sizeof (e_b->a_syms));
+      md_number_to_chars ((char *) e_b->a_entry, headers->header.a_entry, sizeof (e_b->a_entry));
+      md_number_to_chars ((char *) e_b->a_trsize, headers->header.a_trsize, sizeof (e_b->a_trsize));
+      md_number_to_chars ((char *) e_b->a_drsize, headers->header.a_drsize, sizeof (e_b->a_drsize));
 
-  append (where, (char *) &headers->header, sizeof (headers->header));
-#endif /* CROSS_COMPILE */
-
+      *where += sizeof (*e_b);
+    }
+  else
+    append (where, (char *) &headers->header, sizeof (headers->header));
 }
 #endif /* ! defined (obj_header_append) */
 
@@ -303,11 +304,22 @@ obj_symbol_to_chars (where, symbolP)
      char **where;
      symbolS *symbolP;
 {
-  md_number_to_chars ((char *) &(S_GET_OFFSET (symbolP)), S_GET_OFFSET (symbolP), sizeof (S_GET_OFFSET (symbolP)));
-  md_number_to_chars ((char *) &(S_GET_DESC (symbolP)), S_GET_DESC (symbolP), sizeof (S_GET_DESC (symbolP)));
-  md_number_to_chars ((char *) &(symbolP->sy_symbol.n_value), S_GET_VALUE (symbolP), sizeof (symbolP->sy_symbol.n_value));
+  struct /* nlist_bytes */
+    {
+      unsigned char n_strx[BYTES_IN_WORD];
+      unsigned char n_type;
+      unsigned char n_other;
+      unsigned char n_desc[2];
+      unsigned char n_value[BYTES_IN_WORD];
+    } *const sy_nlist = (void *) *where;
 
-  append (where, (char *) &symbolP->sy_symbol, sizeof (obj_symbol_type));
+  md_number_to_chars ((char *) sy_nlist->n_strx, S_GET_OFFSET (symbolP), sizeof (sy_nlist->n_strx));
+  sy_nlist->n_type = symbolP->sy_symbol.n_type;
+  sy_nlist->n_other = symbolP->sy_symbol.n_other;
+  md_number_to_chars ((char *) sy_nlist->n_desc, S_GET_DESC (symbolP), sizeof (sy_nlist->n_desc));
+  md_number_to_chars ((char *) sy_nlist->n_value, S_GET_VALUE (symbolP), sizeof (sy_nlist->n_value));
+
+  *where += sizeof (*sy_nlist);
 }
 
 void
@@ -504,7 +516,7 @@ obj_crawl_symbol_chain (headers)
 
 	  /* The + 1 after strlen account for the \0 at the
 			   end of each string */
-	  if (!S_IS_STABD (symbolP))
+	  if (!S_IS_STABD (symbolP) && S_GET_NAME (symbolP)[0])
 	    {
 	      /* Ordinary case.  */
 	      symbolP->sy_name_offset = string_byte_count;
@@ -542,17 +554,18 @@ obj_emit_strings (where)
 {
   symbolS *symbolP;
 
-#ifdef CROSS_COMPILE
-  /* Gotta do md_ byte-ordering stuff for string_byte_count first - KWK */
-  md_number_to_chars (*where, string_byte_count, sizeof (string_byte_count));
-  *where += sizeof (string_byte_count);
-#else /* CROSS_COMPILE */
-  append (where, (char *) &string_byte_count, (unsigned long) sizeof (string_byte_count));
-#endif /* CROSS_COMPILE */
+  if (CROSS_COMPILE)
+    {
+      /* Gotta do md_ byte-ordering stuff for string_byte_count first - KWK */
+      md_number_to_chars (*where, string_byte_count, BYTES_IN_WORD);
+      *where += BYTES_IN_WORD;
+    }
+  else
+    append (where, (char *) &string_byte_count, sizeof (string_byte_count));
 
   for (symbolP = symbol_rootP; symbolP; symbolP = symbol_next (symbolP))
     {
-      if (S_GET_NAME (symbolP))
+      if (S_GET_NAME (symbolP) && symbolP->sy_name_offset)
 	append (&next_object_file_charP, S_GET_NAME (symbolP),
 		(unsigned long) (strlen (S_GET_NAME (symbolP)) + 1));
     }				/* walk symbol chain */

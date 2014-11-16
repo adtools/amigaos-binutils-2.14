@@ -72,20 +72,22 @@ enum reloc_type
    "struct exec".  Don't assume that on this machine, the "struct exec"
    will lay out the same sizes or alignments.  */
 
+#define BYTES_IN_WORD 4
+
 struct exec_bytes
   {
     unsigned char a_info[4];
-    unsigned char a_text[4];
-    unsigned char a_data[4];
-    unsigned char a_bss[4];
-    unsigned char a_syms[4];
-    unsigned char a_entry[4];
-    unsigned char a_trsize[4];
-    unsigned char a_drsize[4];
+    unsigned char a_text[BYTES_IN_WORD];
+    unsigned char a_data[BYTES_IN_WORD];
+    unsigned char a_bss[BYTES_IN_WORD];
+    unsigned char a_syms[BYTES_IN_WORD];
+    unsigned char a_entry[BYTES_IN_WORD];
+    unsigned char a_trsize[BYTES_IN_WORD];
+    unsigned char a_drsize[BYTES_IN_WORD];
   };
 
 /* How big the "struct exec" is on disk */
-#define	EXEC_BYTES_SIZE	(8 * 4)
+#define	EXEC_BYTES_SIZE (4 + BYTES_IN_WORD * 7)
 
 /* This is the layout in memory of a "struct exec" while we process it.  */
 
