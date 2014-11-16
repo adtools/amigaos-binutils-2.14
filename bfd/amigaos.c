@@ -3015,7 +3015,7 @@ amiga_read_ar_hdr (abfd)
 
   len = GL (&buf[4]) << 2;
 
-  ared->filename = bfd_alloc (abfd, len+1 > 16 ? len+1 : 16);
+  ared->filename = bfd_alloc (abfd, len+1 > 16 ? len+1+16 : 32);
   if (ared->filename == NULL)
     return NULL;
 
@@ -3032,7 +3032,9 @@ amiga_read_ar_hdr (abfd)
 	if (*name == '/')
 	  base = name + 1;
       if (*base != '\0') {
-	ared->filename = base;
+	char *const p = strrchr (ared->filename = base, '.');
+	if (!p || (strcmp (p, ".o") && strcmp (p, ".obj")))
+	  sprintf (name, "-%08lu.o", ++amiga_ardata(abfd)->outnum);
 	break;
       }
       /* Fall through */
