@@ -2001,7 +2001,7 @@ m68k_ip (instring)
 		case 'b':
 		  if (!isbyte (nextword))
 		    opP->error = _("operand out of range");
-		  addword (nextword);
+		  addword (nextword & 0xff); /* G.Nikl: clear upper byte */
 		  baseo = 0;
 		  break;
 		case 'w':
@@ -2546,7 +2546,7 @@ m68k_ip (instring)
 				   user beware! */
 	      if (!isbyte (tmpreg))
 		opP->error = _("out of range");
-	      insop (tmpreg, opcode);
+	      insop (tmpreg & 0xff, opcode); /* G.Nikl: clear upper byte */
 	      if (isvar (&opP->disp))
 		the_ins.reloc[the_ins.nrel - 1].n =
 		  (opcode->m_codenum) * 2 + 1;
