@@ -910,7 +910,9 @@ tc_m68k_fix_adjustable (fixP)
 
 #define get_reloc_code(SIZE,PCREL,OTHER) NO_RELOC
 
-#define relaxable_symbol(symbol) 1
+/* PR gas/3041 Weak symbols are not relaxable
+   because they must be treated as extern.  */
+#define relaxable_symbol(symbol)   (!(S_IS_WEAK (symbol)))
 
 #endif /* OBJ_ELF */
 
@@ -1017,7 +1019,34 @@ tc_gen_reloc (section, fixp)
   *reloc->sym_ptr_ptr = symbol_get_bfdsym (fixp->fx_addsy);
   reloc->address = fixp->fx_frag->fr_address + fixp->fx_where;
 #ifndef OBJ_ELF
-  if (fixp->fx_pcrel)
+  if (OUTPUT_FLAVOR == bfd_target_aout_flavour
+	   && fixp->fx_addsy
+	   && S_IS_WEAK (fixp->fx_addsy)
+	   && ! bfd_is_und_section (S_GET_SEGMENT (fixp->fx_addsy)))
+    {
+      /* PR gas/3041 References to weak symbols must be treated as extern
+	 in order to be overridable by the linker, even if they are defined
+	 in the same object file. So the original addend must be written
+	 "as is" into the output section without further processing.
+	 The addend value must be hacked here in order to force
+	 bfd_install_relocation() to write the original value into the
+	 output section.
+	 1) MD_APPLY_SYM_VALUE() is set to 1 for m68k/a.out, so the symbol
+	 value has already been added to the addend in fixup_segment(). We
+	 have to remove it.
+	 2) bfd_install_relocation() will incorrectly treat this symbol as
+	 resolved, so it will write the symbol value plus its addend and
+	 section VMA. As a workaround we can tweak the addend value here in
+	 order to get the original value in the section after the call to
+	 bfd_install_relocation().  */
+      reloc->addend = fixp->fx_addnumber
+		      /* Fix because of MD_APPLY_SYM_VALUE() */
+		      - S_GET_VALUE (fixp->fx_addsy)
+		      /* Fix for bfd_install_relocation() */
+		      - (S_GET_VALUE (fixp->fx_addsy)
+			 + S_GET_SEGMENT (fixp->fx_addsy)->vma);
+    }
+  else if (fixp->fx_pcrel)
     reloc->addend = fixp->fx_addnumber;
   else
     reloc->addend = 0;
@@ -4332,6 +4361,14 @@ md_apply_fix3 (fixP, valP, seg)
 	S_SET_WEAK (fixP->fx_addsy);
       return;
     }
+#elif defined(OBJ_AOUT) && defined(BFD_ASSEMBLER)
+  /* PR gas/3041 Do not fix frags referencing a weak symbol.  */
+  if (fixP->fx_addsy && S_IS_WEAK (fixP->fx_addsy))
+    {
+      memset (buf, 0, fixP->fx_size);
+      fixP->fx_addnumber = val;	/* Remember value for emit_reloc.  */
+      return;
+    }
 #endif
 
 #ifdef BFD_ASSEMBLER
@@ -4900,6 +4937,7 @@ tc_aout_fix_to_chars (where, fixP, segment_address_in_file)
 
   static const unsigned char nbytes_r_length[] = {42, 0, 1, 42, 2};
   long r_symbolnum;
+  int r_extern;
 
   know (fixP->fx_addsy != NULL);
 
@@ -4907,7 +4945,8 @@ tc_aout_fix_to_chars (where, fixP, segment_address_in_file)
        fixP->fx_frag->fr_address + fixP->fx_where - segment_address_in_file,
 		      4);
 
-  r_symbolnum = (S_IS_DEFINED (fixP->fx_addsy)
+  r_extern = !S_IS_DEFINED (fixP->fx_addsy) || S_IS_WEAK (fixP->fx_addsy) ? 1 : 0;
+  r_symbolnum = (r_extern == 0
 		 ? S_GET_TYPE (fixP->fx_addsy)
 		 : fixP->fx_addsy->sy_number);
 
@@ -4915,7 +4954,7 @@ tc_aout_fix_to_chars (where, fixP, segment_address_in_file)
   where[5] = (r_symbolnum >> 8) & 0x0ff;
   where[6] = r_symbolnum & 0x0ff;
   where[7] = (((fixP->fx_pcrel << 7) & 0x80) | ((nbytes_r_length[fixP->fx_size] << 5) & 0x60) |
-	      (((!S_IS_DEFINED (fixP->fx_addsy)) << 4) & 0x10) | ((fixP->tc_fix_data << 3) & 0x08));
+	      ((r_extern << 4) & 0x10) | ((fixP->tc_fix_data << 3) & 0x08));
 }
 #endif
 

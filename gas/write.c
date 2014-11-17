@@ -2633,7 +2633,7 @@ fixup_segment (fixP, this_segment)
 	}
 
       if (fixP->fx_addsy != NULL)
-	add_symbol_segment = S_GET_SEGMENT (fixP->fx_addsy);
+	add_symbol_segment = S_IS_WEAK (fixP->fx_addsy) ? undefined_section : S_GET_SEGMENT (fixP->fx_addsy);
 
       if (fixP->fx_subsy != NULL)
 	{

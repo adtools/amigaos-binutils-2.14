@@ -201,6 +201,8 @@ extern void m68k_elf_final_processing PARAMS ((void));
 #define RELAX_RELOC_PC16  0
 #define RELAX_RELOC_PC32  0
 
+#define S_IS_WEAK(sym) /**/S_GET_WEAK(sym)
+
 #endif /* ! BFD_ASSEMBLER */
 
 #define DIFF_EXPR_OK
