@@ -1475,9 +1475,9 @@ amiga_write_object_contents (abfd)
 
 	  /* Write out HUNK_DEBUG, size, ZMAGIC, ... */
 	  n[0] = HUNK_DEBUG;
-	  n[1] = 3 + ((symbols * sizeof(struct internal_nlist) + str_size + 3) >> 2);
+	  n[1] = 3 + ((symbols * sizeof(struct external_nlist) + str_size + 3) >> 2);
 	  n[2] = ZMAGIC; /* Magic number */
-	  n[3] = symbols * sizeof(struct internal_nlist);
+	  n[3] = symbols * sizeof(struct external_nlist);
 	  n[4] = str_size;
 	  if (!write_longs (n, 5, abfd))
 	    return FALSE;
