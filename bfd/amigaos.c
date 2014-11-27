@@ -1488,7 +1488,7 @@ amiga_write_object_contents (abfd)
 	      sym = abfd->outsymbols[i];
 	      if (CAN_WRITE_OUTSYM (sym))
 		{
-		  amiga_symbol_type *t = (amiga_symbol_type *) sym;
+		  amiga_symbol_type *t = amiga_symbol(sym);
 		  struct external_nlist data;
 
 		  bfd_h_put_16(abfd, t->desc, data.e_desc);
@@ -2652,7 +2652,7 @@ amiga_slurp_relocs (abfd, section, symbols)
 	      if (!get_long (abfd, &offset))
 		return FALSE;
 	      if (!amiga_add_reloc (abfd, section, offset, abfd->outsymbols ?
-				    (amiga_symbol_type *) abfd->outsymbols[asp->index] : asp,
+				    amiga_symbol(abfd->outsymbols[asp->index]) : asp,
 				    howto, -4))
 		return FALSE;
 	    }
