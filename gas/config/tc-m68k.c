@@ -33,12 +33,6 @@
 #include "elf/m68k.h"
 #endif
 
-/* FIXME: delete this #define as soon as the code that references
-   N_TEXT is changed */
-#ifdef BFD_ASSEMBLER
-#define N_TEXT 4
-#endif
-
 #ifndef OBJ_AMIGAHUNK
 #define OBJ_AMIGAHUNK 0
 #endif
@@ -4656,7 +4650,7 @@ md_convert_frag_1 (fragP)
     case TAB (ABSREL, SHORT):
       fragP->fr_opcode[1] &= ~0x3f;
       fragP->fr_fix += 2;
-      if (S_GET_TYPE (fragP->fr_symbol) == N_TEXT)
+      if (S_GET_SEGMENT (fragP->fr_symbol) == text_section)
 	{
 	  /* so this is really a pc-relative address */
 	  fragP->fr_opcode[1] |= 0x3a;
@@ -4676,7 +4670,7 @@ md_convert_frag_1 (fragP)
       as_bad (_("IMMREL_BYTE: how the ** does this look??"));
       break;
     case TAB (IMMREL, SHORT):
-      if (S_GET_TYPE (fragP->fr_symbol) == N_TEXT)
+      if (S_GET_SEGMENT (fragP->fr_symbol) == text_section)
 	{
 	/* we can only fix operations on data registers, not on <ea> */
 	if ((fragP->fr_opcode[1] & 0x38) != 0)
