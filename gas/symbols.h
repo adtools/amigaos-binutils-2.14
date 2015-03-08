@@ -144,7 +144,9 @@ extern const segT N_TYPE_seg[];	/* subseg.c */
 #define	SEGMENT_TO_SYMBOL_TYPE(seg)  ( seg_N_TYPE [(int) (seg)] )
 extern const short seg_N_TYPE[];/* subseg.c */
 
+#ifndef N_REGISTER
 #define	N_REGISTER	30	/* Fake N_TYPE value for SEG_REGISTER */
+#endif /* N_REGISTER */
 
 void symbol_clear_list_pointers PARAMS ((symbolS * symbolP));
 

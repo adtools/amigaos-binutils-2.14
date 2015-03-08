@@ -44,6 +44,7 @@
 
 extern const short seg_N_TYPE[];
 extern const segT N_TYPE_seg[];
+#define N_REGISTER 18 /* abuse N_COMM; 30 conflicts with N_WARNING! */
 
 #ifndef DEFAULT_MAGIC_NUMBER_FOR_OBJECT_FILE
 #define DEFAULT_MAGIC_NUMBER_FOR_OBJECT_FILE	(OMAGIC)
