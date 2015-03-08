@@ -4840,7 +4840,7 @@ md_estimate_size_before_relax (fragP, segment)
       {
 	if ((S_GET_SEGMENT (fragP->fr_symbol) == segment
 	     && relaxable_symbol (fragP->fr_symbol))
-	    || flag_short_refs || (0 && flag_small_code))
+	    || flag_short_refs || FLAG_SMALL_CODE)
 	  {
 	    fragP->fr_subtype = TAB (ABSREL, SHORT);
 	  }
