@@ -37,6 +37,8 @@
 #define OBJ_AMIGAHUNK 0
 #endif
 
+#define FLAG_SMALL_CODE (0 && flag_small_code)
+
 /* This string holds the chars that always start a comment.  If the
    pre-processor is disabled, these aren't very useful.  The macro
    tc_comment_chars points to this.  We use this, rather than the
@@ -2009,7 +2011,7 @@ m68k_ip (instring)
 	      if (isvar (&opP->disp))
 		{
 /* This doesn't work when the symbol is N_UNDF! We ignore this for now. */
-		  if (0 && flag_small_code)
+		  if (FLAG_SMALL_CODE)
 		    {
 		      add_frag (adds (&opP->disp),
 				offs (&opP->disp),
@@ -2504,7 +2506,7 @@ m68k_ip (instring)
 		  /* Fall through into long */
 		case SIZE_LONG:
 /* This doesn't work when the symbol is N_UNDF! We ignore this for now. */
-		  if (0 && flag_small_code)
+		  if (FLAG_SMALL_CODE)
 		    {
 		      tmpreg=0x3A; /* 7.2 */
 		      add_frag (adds (&opP->disp),
@@ -4489,7 +4491,7 @@ md_convert_frag_1 (fragP)
       fragP->fr_fix += 4;
       break;
     case TAB (BRABSJUNC, LONG):
-      if (flag_small_code)
+      if (FLAG_SMALL_CODE)
 	{
 	  as_bad (_("Long branch in small code model, not supported."));
 	}
@@ -4762,7 +4764,7 @@ md_estimate_size_before_relax (fragP, segment)
 	  {
 	    fragP->fr_subtype = TAB (TABTYPE (fragP->fr_subtype), BYTE);
 	  }
-	else if (flag_short_refs || (0 && flag_small_code))
+	else if (flag_short_refs || FLAG_SMALL_CODE)
 	  {
 	    /* Symbol is undefined and we want short ref.  */
 	    fragP->fr_subtype = TAB (TABTYPE (fragP->fr_subtype), SHORT);
