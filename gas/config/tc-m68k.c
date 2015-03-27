@@ -33,6 +33,10 @@
 #include "elf/m68k.h"
 #endif
 
+#ifndef TE_AMIGA
+#define TE_AMIGA 0
+#endif
+
 #ifndef OBJ_AMIGAHUNK
 #define OBJ_AMIGAHUNK 0
 #endif
@@ -3410,7 +3414,7 @@ struct init_entry
     int number;
   };
 
-#if defined(TE_AMIGA)
+#if TE_AMIGA
   #define FRAME ADDR5
 #else
   #define FRAME ADDR6
@@ -4139,7 +4143,9 @@ m68k_init_after_args ()
 
 #ifdef OBJ_AOUT
   /* Work out the magic number.  This isn't very general.  */
-  if (current_architecture & m68000)
+  if (TE_AMIGA)
+    m68k_aout_machtype = current_architecture & m68020 ? 2 : 1;
+  else if (current_architecture & m68000)
     m68k_aout_machtype = 0;
   else if (current_architecture & m68010)
     m68k_aout_machtype = 1;
