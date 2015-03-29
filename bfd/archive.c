@@ -121,7 +121,7 @@ DESCRIPTION
 
  Regular files with long names (or embedded spaces, for BSD variants):
  "/18             " - SVR4 style, name at offset 18 in name table.
- "#1/23           " - Long name (or embedded paces) 23 characters long,
+ "#1/23           " - Long name (or embedded spaces) 23 characters long,
 		      BSD 4.4 style, full name follows header.
 		      Implemented for reading, not writing.
  " 18             " - Long name 18 characters long, extended pseudo-BSD.
@@ -174,7 +174,11 @@ static struct areltdata *bfd_ar_hdr_from_filesystem
   PARAMS ((bfd *abfd, const char *, bfd *member));
 
 void
-_bfd_ar_spacepad (char *p, size_t n, const char *fmt, long val)
+_bfd_ar_spacepad (p, n, fmt, val)
+     char *p;
+     size_t n;
+     const char *fmt;
+     long val;
 {
   static char buf[20];
   size_t len;

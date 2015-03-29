@@ -178,6 +178,8 @@ bfd_boolean coff_write_armap
 
 extern PTR _bfd_generic_read_ar_hdr
   PARAMS ((bfd *));
+extern void _bfd_ar_spacepad
+  PARAMS ((char *, size_t, const char *, long));
 
 extern PTR _bfd_generic_read_ar_hdr_mag
   PARAMS ((bfd *, const char *));
