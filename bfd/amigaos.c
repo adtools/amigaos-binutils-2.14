@@ -149,7 +149,7 @@ typedef struct amiga_ardata_struct {
   unsigned long outnum;
 } amiga_ardata_type;
 
-#define amiga_ardata(bfd) (*(amiga_ardata_type **)(void *)&(bfd)->tdata.aout_ar_data)
+#define amiga_ardata(bfd) ((bfd)->tdata.amiga_ar_data)
 
 #define bfd_msg (*_bfd_error_handler)
 

@@ -3822,6 +3822,7 @@ struct bfd
       struct bfd_pef_xlib_data_struct *pef_xlib_data;
       struct bfd_sym_data_struct *sym_data;
       struct amiga_data_struct *amiga_data;
+      struct amiga_ardata_struct *amiga_ar_data;
       PTR any;
     }
   tdata;
