@@ -2299,6 +2299,7 @@ _bfd_generic_link_output_symbols (output_bfd, input_bfd, info, psymalloc)
 		default:
 		case bfd_link_hash_new:
 		  abort ();
+		case bfd_link_hash_warning:
 		case bfd_link_hash_undefined:
 		  break;
 		case bfd_link_hash_undefweak:
