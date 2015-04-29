@@ -243,7 +243,7 @@ error_print (const char *fmt, ...)
 #define DPRINT(L,x)
 #endif
 
-enum {R_ABS32=0,R_ABS16,R_ABS8,R_PC16,R_PC8,R_SD32,R_SD16,R_SD8,R_ABS32SHORT,R_PC26,R_PC32,R__MAX};
+enum {R_ABS32=0,R_ABS16,R_ABS8,R_PC32,R_PC16,R_PC8,R_SD32,R_SD16,R_SD8,R_ABS32SHORT,R_PC26,R__MAX};
 static reloc_howto_type howto_table[R__MAX] =
 {
   {H_ABS32,   /* type */
@@ -261,6 +261,7 @@ static reloc_howto_type howto_table[R__MAX] =
   FALSE},     /* pcrel_offset */
   {H_ABS16,      0, 1, 16, FALSE, 0, complain_overflow_bitfield, 0, "RELOC16",      FALSE, 0x0000ffff, 0x0000ffff, FALSE},
   {H_ABS8,       0, 0,  8, FALSE, 0, complain_overflow_bitfield, 0, "RELOC8",       FALSE, 0x000000ff, 0x000000ff, FALSE},
+  {H_PC32,       0, 2, 32, TRUE,  0, complain_overflow_signed,   0, "RELRELOC32",   FALSE, 0xffffffff, 0xffffffff, TRUE},
   {H_PC16,       0, 1, 16, TRUE,  0, complain_overflow_signed,   0, "RELRELOC16",   FALSE, 0x0000ffff, 0x0000ffff, TRUE},
   {H_PC8,        0, 0,  8, TRUE,  0, complain_overflow_signed,   0, "RELRELOC8",    FALSE, 0x000000ff, 0x000000ff, TRUE},
   {H_SD32,       0, 2, 32, FALSE, 0, complain_overflow_bitfield, 0, "DREL32",       FALSE, 0xffffffff, 0xffffffff, FALSE},
@@ -268,7 +269,6 @@ static reloc_howto_type howto_table[R__MAX] =
   {H_SD8,        0, 0,  8, FALSE, 0, complain_overflow_bitfield, 0, "DREL8",        FALSE, 0x000000ff, 0x000000ff, FALSE},
   {H_ABS32SHORT, 0, 1, 16, FALSE, 0, complain_overflow_bitfield, 0, "RELOC32SHORT", FALSE, 0x0000ffff, 0x0000ffff, FALSE},
   {H_PC26,       0, 2, 26, TRUE,  0, complain_overflow_signed,   0, "RELRELOC26",   FALSE, 0x03fffffc, 0x03fffffc, TRUE},
-  {H_PC32,       0, 2, 32, TRUE,  0, complain_overflow_signed,   0, "RELRELOC32",   FALSE, 0xffffffff, 0xffffffff, TRUE}
 };
 
 static reloc_howto_type *
