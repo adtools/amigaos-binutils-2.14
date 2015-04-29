@@ -1725,26 +1725,30 @@ determine_type (r)
 {
   switch (r->howto->type)
     {
-      case H_ABS8: /* 8 bit absolute */
-      case H_PC8:  /* 8 bit pcrel */
-	return 2;
-
-      case H_ABS16: /* 16 bit absolute */
-      case H_PC16:  /* 16 bit pcrel */
-	return 1;
-
       case H_ABS32: /* 32 bit absolute */
-    /*case H_PC32:*//* 32 bit pcrel */
 	return 0;
 
-      case H_SD8: /* 8 bit base rel */
-	return 5;
+      case H_ABS16: /* 16 bit absolute */
+	return 1;
 
-      case H_SD16: /* 16 bit base rel */
+      case H_PC32:  /* 32 bit pcrel */
+	return 2;
+
+      case H_PC16:  /* 16 bit pcrel */
+	return 3;
+
+      case H_ABS8: /* 8 bit absolute */
+      case H_PC8:  /* 8 bit pcrel */
 	return 4;
 
       case H_SD32: /* 32 bit baserel */
-	return 3;
+	return 5;
+
+      case H_SD16: /* 16 bit baserel */
+	return 6;
+
+      case H_SD8: /* 8 bit baserel */
+	return 7;
 
       default: /* Error, can't represent this */
 	bfd_set_error (bfd_error_nonrepresentable_section);
@@ -1752,9 +1756,10 @@ determine_type (r)
     }/* Of switch */
 }
 
-#define NB_RELOC_TYPES 6
+#define NB_RELOC_TYPES 8
 static const unsigned long reloc_types[NB_RELOC_TYPES] = {
-  HUNK_ABSRELOC32, HUNK_RELRELOC16, HUNK_RELRELOC8,
+  HUNK_ABSRELOC32, HUNK_ABSRELOC16,
+  HUNK_RELRELOC32, HUNK_RELRELOC16, HUNK_RELRELOC8,
   HUNK_DREL32,     HUNK_DREL16,     HUNK_DREL8
 };
 
