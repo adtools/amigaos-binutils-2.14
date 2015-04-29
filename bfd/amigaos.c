@@ -243,7 +243,7 @@ error_print (const char *fmt, ...)
 #define DPRINT(L,x)
 #endif
 
-enum {R_ABS32=0,R_PC16,R_PC8,R_SD32,R_SD16,R_SD8,R_ABS32SHORT,R_PC26,R_PC32,R__MAX};
+enum {R_ABS32=0,R_ABS16,R_ABS8,R_PC16,R_PC8,R_SD32,R_SD16,R_SD8,R_ABS32SHORT,R_PC26,R_PC32,R__MAX};
 static reloc_howto_type howto_table[R__MAX] =
 {
   {H_ABS32,   /* type */
@@ -259,6 +259,8 @@ static reloc_howto_type howto_table[R__MAX] =
   0xffffffff, /* src_mask */
   0xffffffff, /* dst_mask */
   FALSE},     /* pcrel_offset */
+  {H_ABS16,      0, 1, 16, FALSE, 0, complain_overflow_bitfield, 0, "RELOC16",      FALSE, 0x0000ffff, 0x0000ffff, FALSE},
+  {H_ABS8,       0, 0,  8, FALSE, 0, complain_overflow_bitfield, 0, "RELOC8",       FALSE, 0x000000ff, 0x000000ff, FALSE},
   {H_PC16,       0, 1, 16, TRUE,  0, complain_overflow_signed,   0, "RELRELOC16",   FALSE, 0x0000ffff, 0x0000ffff, TRUE},
   {H_PC8,        0, 0,  8, TRUE,  0, complain_overflow_signed,   0, "RELRELOC8",    FALSE, 0x000000ff, 0x000000ff, TRUE},
   {H_SD32,       0, 2, 32, FALSE, 0, complain_overflow_bitfield, 0, "DREL32",       FALSE, 0xffffffff, 0xffffffff, FALSE},
@@ -291,6 +293,8 @@ howto_for_raw_reloc (type)
     return &howto_table[R_ABS32SHORT];
   case HUNK_RELRELOC32:
     return &howto_table[R_PC32];
+  case HUNK_ABSRELOC16:
+    return &howto_table[R_ABS16];
   case HUNK_RELRELOC26:
     return &howto_table[R_PC26];
   default:
@@ -307,6 +311,10 @@ howto_for_reloc (type)
   case EXT_ABSREF32:
   case EXT_ABSCOMMON:
     return &howto_table[R_ABS32];
+  case EXT_ABSREF16:
+    return &howto_table[R_ABS16];
+  case EXT_ABSREF8:
+    return &howto_table[R_ABS8];
   case EXT_RELREF32:
     return &howto_table[R_PC32];
   case EXT_RELREF16:
@@ -636,6 +644,8 @@ parse_archive_units (abfd, n_units, filesize, one, syms, symcount)
 	case EXT_DEXT16:
 	case EXT_DEXT8:
 	case EXT_RELREF32:
+	case EXT_ABSREF16:
+	case EXT_ABSREF8:
 	case EXT_RELREF26:
 	  /* skip name */
 	  if (bfd_seek (abfd, len<<2, SEEK_CUR))
@@ -1206,6 +1216,8 @@ amiga_handle_rest (abfd, current_section, isload)
 		case EXT_DEXT16: /* 16 bit baserel */
 		case EXT_DEXT8: /* 8 bit baserel */
 		case EXT_RELREF32:
+		case EXT_ABSREF16:
+		case EXT_ABSREF8:
 		case EXT_RELREF26:
 		  if (!get_long (abfd, &no))
 		    return FALSE;
@@ -2127,17 +2139,23 @@ amiga_write_symbols (abfd, section)
 	  switch (r->howto->type)
 	    {
 	    case H_ABS8:
-	    case H_PC8:
-	      type=EXT_RELREF8;
+	      type=EXT_ABSREF8;
 	      break;
 
 	    case H_ABS16:
-	    case H_PC16:
-	      type=EXT_RELREF16;
+	      type=EXT_ABSREF16;
 	      break;
 
 	    case H_ABS32:
 	      type=EXT_ABSREF32;
+	      break;
+
+	    case H_PC8:
+	      type=EXT_RELREF8;
+	      break;
+
+	    case H_PC16:
+	      type=EXT_RELREF16;
 	      break;
 
 	    case H_PC32:
@@ -2840,8 +2858,8 @@ amiga_bfd_reloc_type_lookup (abfd, code)
     case BFD_RELOC_8_PCREL:    return &howto_table[R_PC8];
     case BFD_RELOC_16_PCREL:   return &howto_table[R_PC16];
     case BFD_RELOC_32_PCREL:   return &howto_table[R_PC32];
-    case BFD_RELOC_8:          return &howto_table[R_PC8];
-    case BFD_RELOC_16:         return &howto_table[R_PC16];
+    case BFD_RELOC_8:          return &howto_table[R_ABS8];
+    case BFD_RELOC_16:         return &howto_table[R_ABS16];
     case BFD_RELOC_32:         return &howto_table[R_ABS32];
     case BFD_RELOC_8_BASEREL:  return &howto_table[R_SD8];
     case BFD_RELOC_16_BASEREL: return &howto_table[R_SD16];
@@ -2933,6 +2951,8 @@ amiga_slurp_armap (abfd)
 	case EXT_DEXT16:
 	case EXT_DEXT8:
 	case EXT_RELREF32:
+	case EXT_ABSREF16:
+	case EXT_ABSREF8:
 	case EXT_RELREF26:
 	  symblock += len<<2;
 	  symblock += (1+GL (symblock))<<2;
