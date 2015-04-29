@@ -1175,9 +1175,9 @@ amiga_handle_rest (abfd, current_section, isload)
 	  for (;;)
 	    {
 	      if (!get_long (abfd, &no))
-	        return FALSE;
+		return FALSE;
 	      if (!no)
-	        break;
+		break;
 
 	      /* symbol type and length */
 	      type = (no>>24) & 0xff;
@@ -1527,7 +1527,7 @@ amiga_write_object_contents (abfd)
 	      sym = abfd->outsymbols[i];
 	      /* NULL entries have been written already... */
 	      if (CAN_WRITE_OUTSYM (sym))
-	        {
+		{
 		  str_size += strlen(sym->name) + 1;
 		  symbols++;
 		}
@@ -1546,13 +1546,13 @@ amiga_write_object_contents (abfd)
 	      }
 	    else if (!strcmp(s->name,".data"))
 	      {
-	        i|=2;
-	        adata(abfd).datasec=s;
+		i|=2;
+		adata(abfd).datasec=s;
 	      }
 	    else if (!strcmp(s->name,".bss"))
 	      {
-	        i|=4;
-	        adata(abfd).bsssec=s;
+		i|=4;
+		adata(abfd).bsssec=s;
 	      }
 
 	  if (i!=7) /* section(s) missing... */
@@ -1605,9 +1605,9 @@ amiga_write_object_contents (abfd)
 		{
 		  size_t len = strlen(sym->name) + 1;
 
-	          /* Write string tab */
-	          if (bfd_bwrite (sym->name, len, abfd) != len)
-	            return FALSE;
+		  /* Write string tab */
+		  if (bfd_bwrite (sym->name, len, abfd) != len)
+		    return FALSE;
 		}
 	    }
 
@@ -2636,7 +2636,7 @@ read_raw_relocs (abfd, section, d_offset, count)
 	      if (!get_long (abfd, &offset) ||
 		  !amiga_add_reloc (abfd, section, offset, NULL, howto,
 				    hunk_number))
-	        return FALSE;
+		return FALSE;
 	    }
 	  }
 	}
