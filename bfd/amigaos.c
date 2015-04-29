@@ -161,6 +161,7 @@ typedef struct amiga_ardata_struct {
 #define MAX_NAME_SIZE 124
 
 static reloc_howto_type *howto_for_raw_reloc PARAMS ((unsigned long type));
+static reloc_howto_type *howto_for_reloc PARAMS ((unsigned long type));
 static bfd_boolean get_long PARAMS ((bfd *, unsigned long *));
 static bfd_boolean get_word PARAMS ((bfd *, unsigned long *));
 static const struct bfd_target *amiga_object_p PARAMS ((bfd *));
@@ -288,6 +289,37 @@ howto_for_raw_reloc (type)
     return &howto_table[R_SD8];
   case HUNK_RELOC32SHORT:
     return &howto_table[R_ABS32SHORT];
+  default:
+    return NULL;
+  }
+}
+
+static reloc_howto_type *
+howto_for_reloc (type)
+     unsigned long type;
+{
+  switch (type)
+  {
+  case EXT_ABSREF32:
+  case EXT_ABSCOMMON:
+    return &howto_table[R_ABS32];
+  case EXT_RELREF32:
+    return &howto_table[R_PC32];
+  case EXT_RELREF16:
+    return &howto_table[R_PC16];
+  case EXT_RELREF8:
+    return &howto_table[R_PC8];
+  case EXT_DEXT32:
+  case EXT_DEXT32COMMON:
+    return &howto_table[R_SD32];
+  case EXT_DEXT16:
+  case EXT_DEXT16COMMON:
+    return &howto_table[R_SD16];
+  case EXT_DEXT8:
+  case EXT_DEXT8COMMON:
+    return &howto_table[R_SD8];
+  case EXT_RELREF26:
+    return &howto_table[R_PC26];
   default:
     return NULL;
   }
@@ -2653,7 +2685,6 @@ amiga_slurp_relocs (abfd, section, symbols)
 	case EXT_DEXT32COMMON:
 	case EXT_DEXT16COMMON:
 	case EXT_DEXT8COMMON:
-	  type -= 75; /* convert to EXT_DEXT */
 	case EXT_ABSCOMMON:
 	  if (bfd_seek (abfd, 4, SEEK_CUR))
 	    return FALSE;
@@ -2662,21 +2693,11 @@ amiga_slurp_relocs (abfd, section, symbols)
 	  /* points to num of refs to hunk */
 	  if (!get_long (abfd, &n))
 	    return FALSE;
+	  /* determine howto */
+	  howto = howto_for_reloc (type);
+	  if (howto == NULL)
+	    return FALSE;
 	  /* Add relocs to this section, relative to asp */
-	  /* determine howto first */
-	  if (type==EXT_ABSCOMMON) /* 32 bit ref */
-	    howto=&howto_table[R_ABS32];
-	  else if (type==EXT_RELREF32)
-	    howto=&howto_table[R_PC32];
-	  else if (type==EXT_RELREF26)
-	    howto=&howto_table[R_PC26];
-	  else
-	    {
-	      type -= EXT_ABSREF32;
-	      if (type)
-		type--; /* skip EXT_ABSCOMMON gap */
-	      howto=&howto_table[R_ABS32+type];
-	    }/* of else */
 	  for (i=0;i<n;i++) /* refs follow */
 	    {
 	      if (!get_long (abfd, &offset))
