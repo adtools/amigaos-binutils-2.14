@@ -1901,19 +1901,19 @@ amiga_write_section_contents (abfd, section, data_sec, datadata_relocs,
       DPRINT(5,("reloc address=%lx,addend=%lx\n",r->address,r->addend));
       values = &section->contents[r->address];
 
-      switch (type)
+      switch (r->howto->size)
 	{
-	case 2: case 5: /* adjust byte */
+	case 0: /* adjust byte */
 	  x = ((char *)values)[0] + r->addend;
 	  values[0] = x & 0xff;
 	  break;
-	case 1: case 4: /* adjust word */
+	case 1: /* adjust word */
 	  k = values[1] | (values[0] << 8);
 	  x = (int)k + r->addend;
 	  values[0] = (x & 0xff00) >> 8;
 	  values[1] = x & 0xff;
 	  break;
-	case 0: case 3: /* adjust long */
+	case 2: /* adjust long */
 	  k = values[3] | (values[2] << 8) | (values[1] << 16) |
 	    (values[0] << 24);
 	  x = (int)k + r->addend;
