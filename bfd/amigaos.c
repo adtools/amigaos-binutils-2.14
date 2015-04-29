@@ -604,6 +604,9 @@ parse_archive_units (abfd, n_units, filesize, one, syms, symcount)
     case HUNK_DREL32:
     case HUNK_DREL16:
     case HUNK_DREL8:
+    case HUNK_RELRELOC32:
+    case HUNK_ABSRELOC16:
+    case HUNK_RELRELOC26:
       for (;;) {
 	/* read offsets count */
 	if (!get_long (abfd, &no))
@@ -1116,6 +1119,9 @@ amiga_handle_rest (abfd, current_section, isload)
 	case HUNK_DREL16:
 	case HUNK_DREL8:
 	case HUNK_RELOC32SHORT:
+	case HUNK_RELRELOC32:
+	case HUNK_ABSRELOC16:
+	case HUNK_RELRELOC26:
 	  /* count and skip relocs */
 	  relp = (raw_reloc_type *) bfd_alloc (abfd, sizeof (*relp));
 	  relp->next = asect->relocs;
