@@ -316,6 +316,7 @@ howto_for_reloc (type)
   case EXT_ABSREF8:
     return &howto_table[R_ABS8];
   case EXT_RELREF32:
+  case EXT_RELCOMMON:
     return &howto_table[R_PC32];
   case EXT_RELREF16:
     return &howto_table[R_PC16];
@@ -658,6 +659,7 @@ parse_archive_units (abfd, n_units, filesize, one, syms, symcount)
 	  break;
 
 	case EXT_ABSCOMMON:
+	case EXT_RELCOMMON:
 	case EXT_DEXT32COMMON:
 	case EXT_DEXT16COMMON:
 	case EXT_DEXT8COMMON:
@@ -1200,6 +1202,7 @@ amiga_handle_rest (abfd, current_section, isload)
 		  break;
 
 		case EXT_ABSCOMMON: /* Common ref/def */
+		case EXT_RELCOMMON:
 		case EXT_DEXT32COMMON:
 		case EXT_DEXT16COMMON:
 		case EXT_DEXT8COMMON:
@@ -2199,6 +2202,10 @@ amiga_write_symbols (abfd, section)
 	      type=EXT_ABSCOMMON;
 	      break;
 
+	    case H_PC32:
+	      type=EXT_RELCOMMON;
+	      break;
+
 	    case H_SD8:
 	      type=EXT_DEXT8COMMON;
 	      break;
@@ -2436,6 +2443,7 @@ amiga_slurp_symbol_table (abfd)
 
 	  switch (type) {
 	  case EXT_ABSCOMMON: /* Common reference/definition */
+	  case EXT_RELCOMMON:
 	  case EXT_DEXT32COMMON:
 	  case EXT_DEXT16COMMON:
 	  case EXT_DEXT8COMMON:
@@ -2707,6 +2715,7 @@ amiga_slurp_relocs (abfd, section, symbols)
 	case EXT_DEXT32COMMON:
 	case EXT_DEXT16COMMON:
 	case EXT_DEXT8COMMON:
+	case EXT_RELCOMMON:
 	case EXT_ABSCOMMON:
 	  if (bfd_seek (abfd, 4, SEEK_CUR))
 	    return FALSE;
@@ -2958,6 +2967,7 @@ amiga_slurp_armap (abfd)
 	  symblock += (1+GL (symblock))<<2;
 	  break;
 	case EXT_ABSCOMMON:
+	case EXT_RELCOMMON:
 	case EXT_DEXT32COMMON:
 	case EXT_DEXT16COMMON:
 	case EXT_DEXT8COMMON:
