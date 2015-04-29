@@ -160,6 +160,7 @@ typedef struct amiga_ardata_struct {
 /* AmigaOS doesn't like HUNK_SYMBOL with symbol names longer than 124 characters */
 #define MAX_NAME_SIZE 124
 
+static reloc_howto_type *howto_for_raw_reloc PARAMS ((unsigned long type));
 static bfd_boolean get_long PARAMS ((bfd *, unsigned long *));
 static bfd_boolean get_word PARAMS ((bfd *, unsigned long *));
 static const struct bfd_target *amiga_object_p PARAMS ((bfd *));
@@ -266,6 +267,31 @@ static reloc_howto_type howto_table[R__MAX] =
   {H_PC26,       0, 2, 26, TRUE,  0, complain_overflow_signed,   0, "RELRELOC26",   FALSE, 0x03fffffc, 0x03fffffc, TRUE},
   {H_PC32,       0, 2, 32, TRUE,  0, complain_overflow_signed,   0, "RELRELOC32",   FALSE, 0xffffffff, 0xffffffff, TRUE}
 };
+
+static reloc_howto_type *
+howto_for_raw_reloc (type)
+     unsigned long type;
+{
+  switch (type)
+  {
+  case HUNK_ABSRELOC32:
+    return &howto_table[R_ABS32];
+  case HUNK_RELRELOC16:
+    return &howto_table[R_PC16];
+  case HUNK_RELRELOC8:
+    return &howto_table[R_PC8];
+  case HUNK_DREL32:
+    return &howto_table[R_SD32];
+  case HUNK_DREL16:
+    return &howto_table[R_SD16];
+  case HUNK_DREL8:
+    return &howto_table[R_SD8];
+  case HUNK_RELOC32SHORT:
+    return &howto_table[R_ABS32SHORT];
+  default:
+    return NULL;
+  }
+}
 
 /* The following are gross hacks that need to be fixed.  The problem is
    that the linker unconditionally references these values without
@@ -2519,11 +2545,18 @@ read_raw_relocs (abfd, section, d_offset, count)
       if (type==HUNK_DREL32 && AMIGA_DATA(abfd)->IsLoadFile)
 	type = HUNK_RELOC32SHORT;
 
+      howto = howto_for_raw_reloc (type);
+      if (howto == NULL)
+	{
+	  bfd_set_error (bfd_error_wrong_format);
+	  return FALSE;
+	}
+
       switch (type)
 	{
 	case HUNK_RELOC32SHORT:
 	  /* read reloc count, hunk number and offsets */
-	  for (howto=&howto_table[R_ABS32SHORT];;) {
+	  for (;;) {
 	    /* read offsets and hunk number */
 	    if (!get_word (abfd, &no))
 	      return FALSE;
@@ -2542,14 +2575,8 @@ read_raw_relocs (abfd, section, d_offset, count)
 	  }
 	  break;
 
-	case HUNK_DREL32: /* 32 bit baserel */
-	case HUNK_DREL16: /* 16 bit baserel */
-	case HUNK_DREL8: /* 8 bit baserel */
-	  type -= 8;
-	case HUNK_ABSRELOC32: /* 32 bit ref */
-	case HUNK_RELRELOC16: /* 16 bit ref */
-	case HUNK_RELRELOC8: /* 8 bit ref */
-	  for (howto=&howto_table[R_ABS32+type-HUNK_ABSRELOC32];;) {
+	default:
+	  for (;;) {
 	    /* read offsets and hunk number */
 	    if (!get_long (abfd, &no))
 	      return FALSE;
@@ -2566,11 +2593,6 @@ read_raw_relocs (abfd, section, d_offset, count)
 		return FALSE;
 	    }
 	  }
-	  break;
-
-	default: /* error */
-	  bfd_set_error (bfd_error_wrong_format);
-	  return FALSE;
 	  break;
 	}
     }
