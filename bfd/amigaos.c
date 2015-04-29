@@ -161,6 +161,7 @@ typedef struct amiga_ardata_struct {
 #define MAX_NAME_SIZE 124
 
 static bfd_boolean get_long PARAMS ((bfd *, unsigned long *));
+static bfd_boolean get_word PARAMS ((bfd *, unsigned long *));
 static const struct bfd_target *amiga_object_p PARAMS ((bfd *));
 static sec_ptr amiga_get_section_by_hunk_number PARAMS ((bfd *, long));
 static bfd_boolean amiga_add_reloc PARAMS ((bfd *, sec_ptr, bfd_size_type,
@@ -294,6 +295,17 @@ get_long (abfd, n)
   if (bfd_bread ((PTR)n, 4, abfd) != 4)
     return FALSE;
   *n = GL (n);
+  return TRUE;
+}
+
+static bfd_boolean
+get_word (abfd, n)
+     bfd *abfd;
+     unsigned long *n;
+{
+  if (bfd_bread ((PTR)n, 2, abfd) != 2)
+    return FALSE;
+  *n = GW (n);
   return TRUE;
 }
 
@@ -1049,10 +1061,9 @@ amiga_handle_rest (abfd, current_section, isload)
 	  }
 	  else {
 	    for (;;) {
-	      char buf[2];
-	      if (bfd_bread (buf, 2, abfd) != 2)
+	      if (!get_word (abfd, &no))
 		return FALSE;
-	      if (no=GW(buf),!no)
+	      if (!no)
 		break;
 	      relp->num += no;
 	      if (bfd_seek (abfd, (no+1)<<1, SEEK_CUR))
@@ -2513,21 +2524,18 @@ read_raw_relocs (abfd, section, d_offset, count)
 	case HUNK_RELOC32SHORT:
 	  /* read reloc count, hunk number and offsets */
 	  for (howto=&howto_table[R_ABS32SHORT];;) {
-	    char buf[2];
-	    if (bfd_bread (buf, 2, abfd) != 2)
+	    /* read offsets and hunk number */
+	    if (!get_word (abfd, &no))
 	      return FALSE;
-	    if (no=GW(buf),!no)
+	    if (!no)
 	      break;
 	    count -= no;
-	    if (bfd_bread (buf, 2, abfd) != 2)
+	    if (!get_word (abfd, &hunk_number))
 	      return FALSE;
-	    hunk_number = GW (buf);
 	    /* add relocs */
 	    for (j=0; j<no; j++) {
-	      if (bfd_bread (buf, 2, abfd) != 2)
-		return FALSE;
-	      offset = GW (buf);
-	      if (!amiga_add_reloc (abfd, section, offset, NULL, howto,
+	      if (!get_word (abfd, &offset) ||
+		  !amiga_add_reloc (abfd, section, offset, NULL, howto,
 				    hunk_number))
 	        return FALSE;
 	    }
