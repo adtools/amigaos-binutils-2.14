@@ -2619,30 +2619,9 @@ read_raw_relocs (abfd, section, d_offset, count)
 	  return FALSE;
 	}
 
-      switch (type)
-	{
-	case HUNK_RELOC32SHORT:
 	  /* read reloc count, hunk number and offsets */
-	  for (;;) {
-	    /* read offsets and hunk number */
-	    if (!get_word (abfd, &no))
-	      return FALSE;
-	    if (!no)
-	      break;
-	    count -= no;
-	    if (!get_word (abfd, &hunk_number))
-	      return FALSE;
-	    /* add relocs */
-	    for (j=0; j<no; j++) {
-	      if (!get_word (abfd, &offset) ||
-		  !amiga_add_reloc (abfd, section, offset, NULL, howto,
-				    hunk_number))
-	        return FALSE;
-	    }
-	  }
-	  break;
-
-	default:
+      if (howto->type != H_ABS32SHORT)
+	{
 	  for (;;) {
 	    /* read offsets and hunk number */
 	    if (!get_long (abfd, &no))
@@ -2657,10 +2636,29 @@ read_raw_relocs (abfd, section, d_offset, count)
 	      if (!get_long (abfd, &offset) ||
 		  !amiga_add_reloc (abfd, section, offset, NULL, howto,
 				    hunk_number))
+	        return FALSE;
+	    }
+	  }
+	}
+      else
+	{
+	  for (;;) {
+	    /* read offsets and hunk number */
+	    if (!get_word (abfd, &no))
+	      return FALSE;
+	    if (!no)
+	      break;
+	    count -= no;
+	    if (!get_word (abfd, &hunk_number))
+	      return FALSE;
+	    /* add relocs */
+	    for (j=0; j<no; j++) {
+	      if (!get_word (abfd, &offset) ||
+		  !amiga_add_reloc (abfd, section, offset, NULL, howto,
+				    hunk_number))
 		return FALSE;
 	    }
 	  }
-	  break;
 	}
     }
 
