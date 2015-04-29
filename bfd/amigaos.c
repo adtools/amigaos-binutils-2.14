@@ -289,6 +289,10 @@ howto_for_raw_reloc (type)
     return &howto_table[R_SD8];
   case HUNK_RELOC32SHORT:
     return &howto_table[R_ABS32SHORT];
+  case HUNK_RELRELOC32:
+    return &howto_table[R_PC32];
+  case HUNK_RELRELOC26:
+    return &howto_table[R_PC26];
   default:
     return NULL;
   }
