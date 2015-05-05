@@ -1010,7 +1010,7 @@ bfd_make_section (abfd, name)
   if (newsect->name != NULL)
     {
       /* Section already exists.  */
-      return newsect;
+      return NULL;
     }
 
   newsect->name = name;
