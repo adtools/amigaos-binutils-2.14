@@ -181,6 +181,8 @@ static bfd_boolean amiga_mkobject PARAMS ((bfd *));
 static bfd_boolean amiga_mkarchive PARAMS ((bfd *));
 static bfd_boolean write_longs PARAMS ((const unsigned long *, unsigned long,
 	bfd *));
+static bfd_boolean write_words PARAMS ((const unsigned long *, unsigned long,
+	bfd *));
 static long determine_datadata_relocs PARAMS ((bfd *, sec_ptr));
 static void remove_section_index PARAMS ((sec_ptr, int *));
 static bfd_boolean amiga_write_object_contents PARAMS ((bfd *));
@@ -1327,6 +1329,26 @@ write_longs (in, nb, abfd)
   return TRUE;
 }
 
+static bfd_boolean
+write_words (in, nb, abfd)
+     const unsigned long *in;
+     unsigned long nb;
+     bfd *abfd;
+{
+  unsigned char out[10*2];
+  unsigned long i;
+
+  while (nb)
+    {
+      for (i=0; i<nb && i<10; in++,i++)
+        bfd_putb16 (in[0], &out[i*2]);
+      if (bfd_bwrite ((PTR)out, 2*i, abfd) != 2*i)
+	return FALSE;
+      nb -= i;
+    }
+  return TRUE;
+}
+
 static long
 determine_datadata_relocs (abfd, section)
      bfd *abfd ATTRIBUTE_UNUSED;
@@ -2021,6 +2043,7 @@ amiga_write_section_contents (abfd, section, data_sec, datadata_relocs,
   if (reloc_count > 0) {
     /* Sample every reloc type */
     for (i = 0; i < NB_RELOC_TYPES; i++) {
+      int rel32 = reloc_types[i] != HUNK_RELOC32SHORT && reloc_types[i] != HUNK_RELRELOC32 ? TRUE : FALSE;
       int written = FALSE;
       for (j = 0; j <= max_hunk; j++) {
 	long relocs;
@@ -2037,8 +2060,14 @@ amiga_write_section_contents (abfd, section, data_sec, datadata_relocs,
 
 	  n[0] = relocs;
 	  n[1] = j;
-	  if (!write_longs (n, 2, abfd))
-	    return FALSE;
+	  if (rel32) {
+	    if (!write_longs (n, 2, abfd))
+	      return FALSE;
+	  }
+	  else {
+	    if (!write_words (n, 2, abfd))
+	      return FALSE;
+	  }
 
 	  reloc_counts[i+(j*NB_RELOC_TYPES)] -= relocs;
 	  reloc_count -= relocs;
@@ -2067,8 +2096,14 @@ amiga_write_section_contents (abfd, section, data_sec, datadata_relocs,
 #endif
 	    if (jj == j && i == determine_type(r)) {
 	      section->orelocation[k] = NULL;
-	      if (!write_longs (&r->address, 1, abfd))
-		return FALSE;
+	      if (rel32) {
+		if (!write_longs (&r->address, 1, abfd))
+		  return FALSE;
+	      }
+	      else {
+		if (!write_words (&r->address, 1, abfd))
+		  return FALSE;
+	      }
 	      if (--relocs == 0)
 		break;
 	    }
@@ -2076,8 +2111,16 @@ amiga_write_section_contents (abfd, section, data_sec, datadata_relocs,
 	}
       }
       /* write a zero to finish the relocs */
-      if (written && !write_longs (&zero, 1, abfd))
-	return FALSE;
+      if (written) {
+	if (rel32 || (bfd_tell (abfd) & 2) == 0) {
+	  if (!write_longs (&zero, 1, abfd))
+	    return FALSE;
+	}
+	else {
+	  if (!write_words (&zero, 1, abfd))
+	    return FALSE;
+	}
+      }
     }
   }
 
