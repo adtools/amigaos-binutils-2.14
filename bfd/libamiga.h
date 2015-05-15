@@ -94,7 +94,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* HOWTO types almost matching aoutx.h/howto_table_std.  */
 
 enum {
-  H_ABS8=0,H_ABS16,H_ABS32,H_ABS32SHORT,H_PC8,H_PC16,H_PC32,H_PC26,H_SD8,H_SD16,H_SD32
+  H_ABS8=0,H_ABS16,H_ABS32,H_ABS32SHORT,H_PC8,H_PC16,H_PC32,H_PC32SHORT,H_SD8,H_SD16,H_SD32,H_PC26
 };
 
 /* Various structures.  */
