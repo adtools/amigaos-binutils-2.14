@@ -602,7 +602,6 @@ parse_archive_units (abfd, n_units, filesize, one, syms, symcount)
     case HUNK_DREL32:
     case HUNK_DREL16:
     case HUNK_DREL8:
-    case HUNK_RELRELOC32:
     case HUNK_ABSRELOC16:
     case HUNK_RELRELOC26:
       for (;;) {
@@ -615,6 +614,21 @@ parse_archive_units (abfd, n_units, filesize, one, syms, symcount)
 	if (bfd_seek (abfd, (no+1)<<2, SEEK_CUR))
 	  return FALSE;
       }
+      break;
+    case HUNK_RELOC32SHORT:
+    case HUNK_RELRELOC32:
+      for (;;) {
+	/* read offsets count */
+	if (!get_word (abfd, &no))
+	  return FALSE;
+	if (!no)
+	  break;
+	/* skip hunk+offsets */
+	if (bfd_seek (abfd, (no+1)<<1, SEEK_CUR))
+	  return FALSE;
+      }
+      if ((bfd_tell (abfd) & 2) && bfd_seek (abfd, 2, SEEK_CUR))
+        return FALSE;
       break;
     case HUNK_EXT:
       defsym_pos = 0;
@@ -1126,7 +1140,7 @@ amiga_handle_rest (abfd, current_section, isload)
 	  asect->relocs = relp;
 	  relp->pos = bfd_tell (abfd) - 4;
 	  relp->num = 0;
-	  if (hunk_value != HUNK_RELOC32SHORT) {
+	  if (hunk_value != HUNK_RELOC32SHORT && hunk_value != HUNK_RELRELOC32) {
 	    for (;;) {
 	      if (!get_long (abfd, &no))
 		return FALSE;
@@ -2624,7 +2638,7 @@ read_raw_relocs (abfd, section, d_offset, count)
 	}
 
 	  /* read reloc count, hunk number and offsets */
-      if (howto->type != H_ABS32SHORT)
+      if (type != HUNK_RELOC32SHORT && type != HUNK_RELRELOC32)
 	{
 	  for (;;) {
 	    /* read offsets and hunk number */
