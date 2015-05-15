@@ -243,7 +243,7 @@ error_print (const char *fmt, ...)
 #define DPRINT(L,x)
 #endif
 
-enum {R_ABS32=0,R_ABS16,R_ABS8,R_PC32,R_PC16,R_PC8,R_SD32,R_SD16,R_SD8,R_ABS32SHORT,R_PC26,R__MAX};
+enum {R_ABS32=0,R_ABS16,R_ABS8,R_PC32,R_PC16,R_PC8,R_SD32,R_SD16,R_SD8,R_PC26,R__MAX};
 static reloc_howto_type howto_table[R__MAX] =
 {
   {H_ABS32,   /* type */
@@ -267,7 +267,6 @@ static reloc_howto_type howto_table[R__MAX] =
   {H_SD32,       0, 2, 32, FALSE, 0, complain_overflow_bitfield, 0, "DREL32",       FALSE, 0xffffffff, 0xffffffff, FALSE},
   {H_SD16,       0, 1, 16, FALSE, 0, complain_overflow_bitfield, 0, "DREL16",       FALSE, 0x0000ffff, 0x0000ffff, FALSE},
   {H_SD8,        0, 0,  8, FALSE, 0, complain_overflow_bitfield, 0, "DREL8",        FALSE, 0x000000ff, 0x000000ff, FALSE},
-  {H_ABS32SHORT, 0, 1, 16, FALSE, 0, complain_overflow_bitfield, 0, "RELOC32SHORT", FALSE, 0x0000ffff, 0x0000ffff, FALSE},
   {H_PC26,       0, 2, 26, TRUE,  0, complain_overflow_signed,   0, "RELRELOC26",   FALSE, 0x03fffffc, 0x03fffffc, TRUE},
 };
 
@@ -278,6 +277,7 @@ howto_for_raw_reloc (type)
   switch (type)
   {
   case HUNK_ABSRELOC32:
+  case HUNK_RELOC32SHORT:
     return &howto_table[R_ABS32];
   case HUNK_RELRELOC16:
     return &howto_table[R_PC16];
@@ -289,8 +289,6 @@ howto_for_raw_reloc (type)
     return &howto_table[R_SD16];
   case HUNK_DREL8:
     return &howto_table[R_SD8];
-  case HUNK_RELOC32SHORT:
-    return &howto_table[R_ABS32SHORT];
   case HUNK_RELRELOC32:
     return &howto_table[R_PC32];
   case HUNK_ABSRELOC16:
