@@ -644,7 +644,12 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
     case H_PC32:
       if (bfd_is_abs_section(target_section)) /* Ref to absolute hunk */
 	relocation=sym->value;
-      else
+      else if (sec->output_section!=target_section->output_section) /* Error */
+	{
+	  DPRINT(5,("pc relative, but out-of-range\n"));
+	  ret=bfd_reloc_outofrange;
+	}
+      else /* Same section */
 	{
 	  relocation = sym->value + target_section->output_offset
 	    - sec->output_offset;
