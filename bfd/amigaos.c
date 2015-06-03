@@ -161,7 +161,7 @@ typedef struct amiga_ardata_struct {
 #define MAX_NAME_SIZE 124
 
 static bfd_boolean amiga_reloc_long_p PARAMS ((unsigned long, bfd_boolean));
-static reloc_howto_type *howto_for_raw_reloc PARAMS ((unsigned long));
+static reloc_howto_type *howto_for_raw_reloc PARAMS ((unsigned long, bfd_boolean));
 static reloc_howto_type *howto_for_reloc PARAMS ((unsigned long));
 static bfd_boolean get_long PARAMS ((bfd *, unsigned long *));
 static bfd_boolean get_word PARAMS ((bfd *, unsigned long *));
@@ -288,8 +288,9 @@ amiga_reloc_long_p (type, isload)
 }
 
 static reloc_howto_type *
-howto_for_raw_reloc (type)
+howto_for_raw_reloc (type, isload)
      unsigned long type;
+     bfd_boolean isload;
 {
   switch (type)
   {
@@ -301,7 +302,7 @@ howto_for_raw_reloc (type)
   case HUNK_RELRELOC8:
     return &howto_table[R_PC8];
   case HUNK_DREL32:
-    return &howto_table[R_SD32];
+    return &howto_table[isload ? R_ABS32 : R_SD32];
   case HUNK_DREL16:
     return &howto_table[R_SD16];
   case HUNK_DREL8:
@@ -1139,12 +1140,10 @@ amiga_handle_rest (abfd, current_section, isload)
 	  return TRUE;
 	  break;
 
-	case HUNK_DREL32:
-	  if (isload)
-	    hunk_value = HUNK_RELOC32SHORT;
 	case HUNK_ABSRELOC32:
 	case HUNK_RELRELOC16:
 	case HUNK_RELRELOC8:
+	case HUNK_DREL32:
 	case HUNK_DREL16:
 	case HUNK_DREL8:
 	case HUNK_RELOC32SHORT:
@@ -2685,10 +2684,7 @@ read_raw_relocs (abfd, section, d_offset, count)
       if (!get_long (abfd, &type))
 	return FALSE;
 
-      if (type==HUNK_DREL32 && AMIGA_DATA(abfd)->IsLoadFile)
-	type = HUNK_RELOC32SHORT;
-
-      howto = howto_for_raw_reloc (type);
+      howto = howto_for_raw_reloc (type, AMIGA_DATA(abfd)->IsLoadFile);
       if (howto == NULL)
 	{
 	  bfd_set_error (bfd_error_wrong_format);
