@@ -160,6 +160,7 @@ typedef struct amiga_ardata_struct {
 /* AmigaOS doesn't like HUNK_SYMBOL with symbol names longer than 124 characters */
 #define MAX_NAME_SIZE 124
 
+static bfd_boolean amiga_reloc_long_p PARAMS ((unsigned long, bfd_boolean));
 static reloc_howto_type *howto_for_raw_reloc PARAMS ((unsigned long));
 static reloc_howto_type *howto_for_reloc PARAMS ((unsigned long));
 static bfd_boolean get_long PARAMS ((bfd *, unsigned long *));
@@ -271,6 +272,20 @@ static reloc_howto_type howto_table[R__MAX] =
   {H_SD8,        0, 0,  8, FALSE, 0, complain_overflow_bitfield, 0, "DREL8",        FALSE, 0x000000ff, 0x000000ff, FALSE},
   {H_PC26,       0, 2, 26, TRUE,  0, complain_overflow_signed,   0, "RELRELOC26",   FALSE, 0x03fffffc, 0x03fffffc, TRUE},
 };
+
+/* Determine the on-disk relocation size.
+   AmigaOS upto 3.9 goofed parsing HUNK_RELRELOC32 within an executable
+   and reads the hunk data as 16bit words.  */
+static bfd_boolean
+amiga_reloc_long_p (type, isload)
+     unsigned long type;
+     bfd_boolean isload;
+{
+  if (type == HUNK_RELOC32SHORT
+      || (isload && (type == HUNK_DREL32 || type == HUNK_RELRELOC32)))
+    return FALSE;
+  return TRUE;
+}
 
 static reloc_howto_type *
 howto_for_raw_reloc (type)
@@ -1142,7 +1157,7 @@ amiga_handle_rest (abfd, current_section, isload)
 	  asect->relocs = relp;
 	  relp->pos = bfd_tell (abfd) - 4;
 	  relp->num = 0;
-	  if (hunk_value != HUNK_RELOC32SHORT && hunk_value != HUNK_RELRELOC32) {
+	  if (amiga_reloc_long_p (hunk_value, isload)) {
 	    for (;;) {
 	      if (!get_long (abfd, &no))
 		return FALSE;
@@ -2043,7 +2058,7 @@ amiga_write_section_contents (abfd, section, data_sec, datadata_relocs,
   if (reloc_count > 0) {
     /* Sample every reloc type */
     for (i = 0; i < NB_RELOC_TYPES; i++) {
-      int rel32 = reloc_types[i] != HUNK_RELOC32SHORT && reloc_types[i] != HUNK_RELRELOC32 ? TRUE : FALSE;
+      bfd_boolean rel32 = amiga_reloc_long_p (reloc_types[i], AMIGA_DATA(abfd)->IsLoadFile);
       int written = FALSE;
       for (j = 0; j <= max_hunk; j++) {
 	long relocs;
@@ -2681,7 +2696,7 @@ read_raw_relocs (abfd, section, d_offset, count)
 	}
 
 	  /* read reloc count, hunk number and offsets */
-      if (type != HUNK_RELOC32SHORT && type != HUNK_RELRELOC32)
+      if (amiga_reloc_long_p (type, AMIGA_DATA(abfd)->IsLoadFile))
 	{
 	  for (;;) {
 	    /* read offsets and hunk number */
