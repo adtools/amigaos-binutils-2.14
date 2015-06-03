@@ -160,8 +160,8 @@ typedef struct amiga_ardata_struct {
 /* AmigaOS doesn't like HUNK_SYMBOL with symbol names longer than 124 characters */
 #define MAX_NAME_SIZE 124
 
-static reloc_howto_type *howto_for_raw_reloc PARAMS ((unsigned long type));
-static reloc_howto_type *howto_for_reloc PARAMS ((unsigned long type));
+static reloc_howto_type *howto_for_raw_reloc PARAMS ((unsigned long));
+static reloc_howto_type *howto_for_reloc PARAMS ((unsigned long));
 static bfd_boolean get_long PARAMS ((bfd *, unsigned long *));
 static bfd_boolean get_word PARAMS ((bfd *, unsigned long *));
 static const struct bfd_target *amiga_object_p PARAMS ((bfd *));
