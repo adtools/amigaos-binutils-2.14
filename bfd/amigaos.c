@@ -619,6 +619,7 @@ parse_archive_units (abfd, n_units, filesize, one, syms, symcount)
     case HUNK_DREL32:
     case HUNK_DREL16:
     case HUNK_DREL8:
+    case HUNK_RELRELOC32: /* 32bit data in an object file! */
     case HUNK_ABSRELOC16:
     case HUNK_RELRELOC26:
       for (;;) {
@@ -633,7 +634,6 @@ parse_archive_units (abfd, n_units, filesize, one, syms, symcount)
       }
       break;
     case HUNK_RELOC32SHORT:
-    case HUNK_RELRELOC32:
       for (;;) {
 	/* read offsets count */
 	if (!get_word (abfd, &no))
