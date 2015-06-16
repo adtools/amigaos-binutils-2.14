@@ -129,7 +129,7 @@ BFD:
 extern PTR alloca PARAMS ((size_t));
 #endif
 
-#define bfd_is_bfd_section(sec) \
+#define bfd_is_special_section(sec) \
   (bfd_is_abs_section(sec)||bfd_is_com_section(sec)||bfd_is_und_section(sec)||bfd_is_ind_section(sec))
 
 struct arch_syms {
@@ -1382,7 +1382,7 @@ determine_datadata_relocs (abfd, section)
       insection=sym_p->section;
 
       /* Is reloc relative to a special section? */
-      if (bfd_is_bfd_section(insection))
+      if (bfd_is_special_section(insection))
 	continue; /* Nothing to do, since this translates to HUNK_EXT */
       if (insection->output_section == section)
 	relocs++;
@@ -1940,7 +1940,7 @@ amiga_write_section_contents (abfd, section, data_sec, datadata_relocs,
       DPRINT(5,("Sec for reloc is %lx(%s)\n",insection,insection->name));
       DPRINT(5,("Symbol for this reloc is %lx(%s)\n",sym_p,sym_p->name));
       /* Is reloc relative to a special section? */
-      if (bfd_is_bfd_section(insection))
+      if (bfd_is_special_section(insection))
 	continue; /* Nothing to do, since this translates to HUNK_EXT */
 
       r->addend += sym_p->value; /* Add offset of symbol from section start */
@@ -2040,7 +2040,7 @@ amiga_write_section_contents (abfd, section, data_sec, datadata_relocs,
 	  sym_p = *(r->sym_ptr_ptr); /* The symbol for this relocation */
 	  insection = sym_p->section;
 	  /* Is reloc relative to a special section? */
-	  if (bfd_is_bfd_section(insection))
+	  if (bfd_is_special_section(insection))
 	    continue; /* Nothing to do, since this translates to HUNK_EXT */
 
 	  if (insection->output_section == data_sec)
@@ -2096,7 +2096,7 @@ amiga_write_section_contents (abfd, section, data_sec, datadata_relocs,
 	    sym_p = *(r->sym_ptr_ptr); /* The symbol for this relocation */
 	    insection = sym_p->section;
 	    /* Is reloc relative to a special section? */
-	    if (bfd_is_bfd_section(insection))
+	    if (bfd_is_special_section(insection))
 	      continue; /* Nothing to do, since this translates to HUNK_EXT */
 #if 0
 	    /* Determine which hunk to write, and index of target */
