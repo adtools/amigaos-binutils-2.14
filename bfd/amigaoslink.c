@@ -112,8 +112,10 @@ aout_amiga_final_link PARAMS ((bfd *, struct bfd_link_info *));
 
 static bfd_reloc_status_type
 my_add_to PARAMS ((arelent *, PTR, int, int));
+static void amiga_update_target_section PARAMS ((sec_ptr));
 static bfd_reloc_status_type
 amiga_perform_reloc PARAMS ((bfd *, arelent *, PTR, sec_ptr, bfd *, char **));
+static void aout_update_target_section PARAMS ((sec_ptr));
 static bfd_reloc_status_type
 aout_perform_reloc PARAMS ((bfd *, arelent *, PTR, sec_ptr, bfd *, char **));
 static bfd_boolean
@@ -344,6 +346,34 @@ my_add_to (r, data, add, flags)
 }
 
 
+/* For base-relative linking place .bss symbols in the .data section.  */
+static void
+amiga_update_target_section (target_section)
+     sec_ptr target_section;
+{
+  /* If target->out is .bss, add the value of the .data section to
+     sym->value and set new output_section */
+  /* If we access a symbol in the .bss section, we have to convert
+     this to an access to .data section */
+  /* This is done through a change to the output section of
+     the symbol.. */
+  if (!strcmp(target_section->output_section->name,".bss"))
+    {
+      /* get value for .data section */
+      bfd *ibfd;
+      sec_ptr s;
+
+      ibfd=target_section->output_section->owner;
+      for (s=ibfd->sections;s!=NULL;s=s->next)
+	if (!strcmp(s->name,".data"))
+	  {
+	    target_section->output_offset=s->_raw_size;
+	    target_section->output_section=s;
+	  }
+    }
+}
+
+
 /* Perform an Amiga relocation */
 static bfd_reloc_status_type
 amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
@@ -406,25 +436,8 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
 	}
       else
 	{
-	  /* If we access a symbol in the .bss section, we have to convert
-	     this to an access to .data section */
-	  /* This is done through a change to the output section of
-	     the symbol.. */
-	  if (amiga_base_relative
-	      && !strcmp(target_section->output_section->name,".bss"))
-	    {
-	      /* get value for .data section */
-	      bfd *ibfd;
-	      sec_ptr s;
-
-	      ibfd=target_section->output_section->owner;
-	      for (s=ibfd->sections;s!=NULL;s=s->next)
-		if (!strcmp(s->name,".data"))
-		  {
-		    target_section->output_offset=s->_raw_size;
-		    target_section->output_section=s;
-		  }
-	    }
+	  if (amiga_base_relative)
+	    amiga_update_target_section (target_section);
 	  relocation=0;
 	  copy=TRUE;
 	}
@@ -475,21 +488,7 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
         }
       else
 	{
-	  /* If target->out is .bss, add the value of the .data section to
-	     sym->value and set new output_section */
-	  if (!strcmp(target_section->output_section->name,".bss"))
-	    {
-	      bfd *ibfd;
-	      sec_ptr s;
-
-	      ibfd=target_section->output_section->owner;
-	      for (s=ibfd->sections;s!=NULL;s=s->next)
-		if (!strcmp(s->name,".data"))
-		  {
-		    target_section->output_offset=s->_raw_size;
-		    target_section->output_section=s;
-		  }
-	    }
+	  amiga_update_target_section (target_section);
 
 	  relocation = sym->value + target_section->output_offset
 	    - (AMIGA_DATA(target_section->output_section->owner))->a4init
@@ -518,6 +517,34 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
     }
   DPRINT(5,("Leaving amiga_perf_reloc with %d (OK=%d)\n",ret,bfd_reloc_ok));
   return ret;
+}
+
+
+/* For base-relative linking place .bss symbols in the .data section.  */
+static void
+aout_update_target_section (target_section)
+     sec_ptr target_section;
+{
+  /* If target->out is .bss, add the value of the .data section to
+     sym->value and set new output_section */
+  /* If we access a symbol in the .bss section, we have to convert
+     this to an access to .data section */
+  /* This is done through a change to the output section of
+     the symbol.. */
+  if (!strcmp(target_section->output_section->name,".bss"))
+    {
+      /* get value for .data section */
+      bfd *ibfd;
+      sec_ptr s;
+
+      ibfd=target_section->output_section->owner;
+      for (s=ibfd->sections;s!=NULL;s=s->next)
+	if (!strcmp(s->name,".data"))
+	  {
+	    target_section->output_offset+=s->_raw_size;
+	    target_section->output_section=s;
+	  }
+    }
 }
 
 
@@ -611,25 +638,8 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
 	}
       else
 	{
-	  /* If we access a symbol in the .bss section, we have to convert
-	     this to an access to .data section */
-	  /* This is done through a change to the output section of
-	     the symbol.. */
-	  if (amiga_base_relative
-	      && !strcmp(target_section->output_section->name,".bss"))
-	    {
-	      /* get value for .data section */
-	      bfd *ibfd;
-	      sec_ptr s;
-
-	      ibfd=target_section->output_section->owner;
-	      for (s=ibfd->sections;s!=NULL;s=s->next)
-		if (!strcmp(s->name,".data"))
-		  {
-		    target_section->output_offset+=s->_raw_size;
-		    target_section->output_section=s;
-		  }
-	    }
+	  if (amiga_base_relative)
+	    aout_update_target_section (target_section);
 	  relocation=0;
 	  copy=TRUE;
 	}
@@ -684,21 +694,7 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
         }
       else /* Target section and sec need not be the same.. */
 	{
-	  /* If target->out is .bss, add the value of the .data section to
-	     sym->value and set new output_section */
-	  if (!strcmp(target_section->output_section->name,".bss"))
-	    {
-	      bfd *ibfd;
-	      sec_ptr s;
-
-	      ibfd=target_section->output_section->owner;
-	      for (s=ibfd->sections;s!=NULL;s=s->next)
-		if (!strcmp(s->name,".data"))
-		  {
-		    target_section->output_offset+=s->_raw_size;
-		    target_section->output_section=s;
-		  }
-	    }
+	  aout_update_target_section (target_section);
 
 	  relocation = sym->value + target_section->output_offset
 	    - (AMIGA_DATA(target_section->output_section->owner))->a4init;
