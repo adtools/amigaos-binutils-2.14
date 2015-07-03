@@ -347,7 +347,7 @@ my_add_to (r, data, add, flags)
 /* Perform an Amiga relocation */
 static bfd_reloc_status_type
 amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
-     bfd *abfd ATTRIBUTE_UNUSED;
+     bfd *abfd;
      arelent *r;
      PTR data;
      sec_ptr sec;
@@ -635,8 +635,10 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
 	}
       DPRINT(10,("target->out=%s(%lx), sec->out=%s(%lx), symbol=%s\n",
 		 target_section->output_section->name,
-		 target_section->output_section,sec->output_section->name,
-		 sec->output_section,sym->name));
+		 target_section->output_section,
+		 sec->output_section->name,
+		 sec->output_section,
+		 sym->name));
       break;
 
     case H_PC8: /* pcrel */
@@ -713,8 +715,10 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
 	}
       DPRINT(10,("target->out=%s(%lx), sec->out=%s(%lx), symbol=%s\n",
 		 target_section->output_section->name,
-		 target_section->output_section,sec->output_section->name,
-		 sec->output_section,sym->name));
+		 target_section->output_section,
+		 sec->output_section->name,
+		 sec->output_section,
+		 sym->name));
       break;
 
     default:
