@@ -4144,7 +4144,7 @@ m68k_init_after_args ()
 #ifdef OBJ_AOUT
   /* Work out the magic number.  This isn't very general.  */
   if (TE_AMIGA)
-    m68k_aout_machtype = current_architecture & m68020 ? 2 : 1;
+    m68k_aout_machtype = current_architecture & m68020up ? 2 : 1;
   else if (current_architecture & m68000)
     m68k_aout_machtype = 0;
   else if (current_architecture & m68010)
